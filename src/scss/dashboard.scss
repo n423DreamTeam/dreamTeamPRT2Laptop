@@ -1,5 +1,21 @@
 @use "variables" as *;
 @use "mixins" as *;
+html {
+  scroll-behavior: smooth;
+}
+
+@keyframes spinCarousel {
+  0% {
+    transform: perspective(1000px) rotateY(0deg);
+  }
+  100% {
+    transform: perspective(1000px) rotateY(-360deg);
+  }
+}
+
+.banner .slider.css-auto-spin {
+  animation: spinCarousel 48s linear infinite;
+}
 
 /* Animations */
 @keyframes slideIn {
@@ -17,7 +33,7 @@ body.dashboard-body {
   background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
     url("/src/images/background.jpeg") no-repeat top/cover;
   background-color: rgba(10, 15, 45);
-  color: $text-light;
+  color: white;
   font-family: $font-body;
   margin: 0;
   height: 100vh;
@@ -46,49 +62,6 @@ body.dashboard-body {
     flex-direction: column;
   }
 
-  /* NAVBAR */
-  .navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.2rem 3rem;
-    background: rgba(10, 15, 45, 0.9);
-    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-    border: 2px solid white;
-    border-radius: 20px;
-    top: 50px;
-    position: relative;
-    width: 90%;
-    margin: 0 auto;
-
-    .logo {
-      font-family: $font-heading;
-      font-size: 1.6rem;
-      color: $text-light;
-      letter-spacing: 2px;
-    }
-
-    nav {
-      display: flex;
-      gap: 2rem;
-
-      a {
-        color: rgba(255, 255, 255, 0.8);
-        text-decoration: none;
-        text-transform: uppercase;
-        font-weight: 600;
-        font-family: $font-heading;
-        font-size: 1.2rem;
-        transition: 0.3s ease;
-
-        &:hover {
-          color: #ffcb05;
-        }
-      }
-    }
-  }
-
-  /* MAIN CONTENT */
   .dashboard-main {
     flex: 1;
     padding: 3rem;
@@ -113,16 +86,21 @@ body.dashboard-body {
     .daily {
       background: #ffcb05;
       display: inline-block;
-      padding: 0.5rem 1.2rem;
+      padding: 0.3rem 1rem;
       margin-top: 1rem;
       border-radius: 8px;
       font-weight: 600;
       color: #000;
-      font-size: 0.9rem;
+      font-size: rem;
+      transition: background-color 0.3s ease;
+      &:hover {
+        background-color: #ffffff;
+      }
       p {
         color: #000;
         justify-content: center;
         align-items: center;
+        font-size: 1.7rem;
         margin-top: 10px;
         font-family: dreamTeam, sans-serif;
       }
@@ -161,7 +139,7 @@ body.dashboard-body {
     h3 {
       color: #ffcb05;
       font-family: $font-heading;
-      font-size: 1.6rem;
+      font-size: 2rem;
       margin-bottom: 0.4rem;
     }
 
@@ -269,60 +247,10 @@ body.dashboard-body {
           font-size: 1rem;
           text-align: center;
         }
-
-        .socialLinks {
-          position: absolute;
-          bottom: 60px;
-          left: 50%;
-          transform: translateX(-50%);
-          display: flex;
-          gap: 1rem;
-
-          a {
-            color: #ffc107;
-            font-size: 1.5rem;
-            transition: color 0.3s;
-
-            &:hover {
-              color: #ffb300;
-            }
-          }
-        }
       }
     }
   }
 
-  // === NAVIGATION BUTTONS ===
-  .nav2 {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background: rgba(#ffc107, 0.8);
-    border: none;
-    color: white;
-    font-size: 2rem;
-    padding: 0.5rem 1rem;
-    cursor: pointer;
-    border-radius: 50%;
-    z-index: 10;
-    transition: background 0.3s;
-
-    &:hover {
-      background: #ffb300;
-    }
-
-    &.left2 {
-      left: 2%;
-    }
-
-    &.right2 {
-      right: 2%;
-    }
-  }
-
-  /* ===========================
-     STAT-MATCH PUZZLE (refined)
-     =========================== */
   .puzzle-section {
     max-width: 950px;
     margin: 3rem auto;
@@ -331,7 +259,7 @@ body.dashboard-body {
 
     h2 {
       font-family: $font-heading;
-      font-size: 2.6rem;
+      font-size: 5rem;
       text-transform: uppercase;
       letter-spacing: 1.5px;
       color: #fff;
@@ -341,6 +269,7 @@ body.dashboard-body {
     .subtitle {
       color: rgba(255, 255, 255, 0.7);
       margin-bottom: 1.8rem;
+      font-size: 1.4rem;
     }
 
     .puzzle-objective {
@@ -352,6 +281,14 @@ body.dashboard-body {
       padding: 1rem 1.4rem;
       box-shadow: 0 0 18px rgba(255, 255, 255, 0.05);
       text-align: left;
+      font-size: 1.7rem;
+      h3 {
+        font-size: 1.5rem;
+      }
+      p {
+        line-height: 1.4;
+        font-size: 1.2rem;
+      }
     }
 
     .puzzle-layout {
@@ -361,16 +298,6 @@ body.dashboard-body {
       flex-wrap: wrap;
       gap: 3rem;
     }
-  }
-
-  /* LINEUP BOX */
-  .lineup-box {
-    background: rgba(0, 0, 0, 0.8);
-    border: 2px solid rgba(255, 255, 255, 0.15);
-    border-radius: 1rem;
-    padding: 2rem;
-    text-align: center;
-    color: rgba(255, 255, 255, 0.85);
   }
 
   /* FOOTER */
@@ -467,7 +394,7 @@ body.dashboard-body {
       align-items: center;
       gap: 0.6rem;
       box-shadow: 0 2px 8px rgba(91, 127, 255, 0.3);
-      animation: slideIn 0.3s ease;
+      animation: slideIn 0.7s ease;
       transition: all 0.2s ease;
 
       &:hover {

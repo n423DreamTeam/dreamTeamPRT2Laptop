@@ -1,6 +1,5 @@
 import "./scss/styles.scss";
 
-import { initializeApp } from "firebase/app";
 import {
   getAuth,
   createUserWithEmailAndPassword,
@@ -11,31 +10,15 @@ import {
   onAuthStateChanged,
   updateProfile,
 } from "firebase/auth";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyC74Yy1umbex7FlZbo3WLb9Skr3YRyDGDA",
-  authDomain: "n423-6048d.firebaseapp.com",
-  projectId: "n423-6048d",
-  storageBucket: "n423-6048d.firebasestorage.app",
-  messagingSenderId: "358545178901",
-  appId: "1:358545178901:web:19ce544398e43bb601e91c",
-  measurementId: "G-72TXE25F8B"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+import { app } from "../firebase.js";
+// Use shared Firebase app instance
 const auth = getAuth(app);
 
 // Track login state
 onAuthStateChanged(auth, (user) => {
   if (user) {
     console.log("User is signed in:", user.email, user.displayName);
-
-    // Optional redirect if user is logged in and on login/signup page
-    const path = window.location.pathname;
-    if (path.includes("login.html") || path.includes("signup.html")) {
-      window.location.href = "/src/dashboard.html";
-    }
+    // Removed auto-redirect from login/signup so user can choose to switch accounts.
   } else {
     console.log("No user is signed in.");
 

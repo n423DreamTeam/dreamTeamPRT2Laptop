@@ -1,6 +1,7 @@
 @use "structure.scss";
 @use "variables.scss";
 @use "mixins.scss";
+@use "nav.scss";
 @use "landing.scss";
 @use "login.scss";
 @use "signup.scss";
@@ -8,4 +9,4 @@
 @use "leaderboard.scss";
 @use "chat.scss";
 @use "rewards.scss";
-@use "account.scss";
+@use "account-new.scss";
