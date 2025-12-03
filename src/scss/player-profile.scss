@@ -1,0 +1,270 @@
+@import "variables";
+
+.player-profile-main {
+  background: url(../images/background.jpeg);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: #002d62;
+  min-height: 100vh;
+  padding: 2rem 4rem 4rem 4rem;
+  color: #fff;
+  font-family: basketball;
+  position: relative;
+  z-index: 0;
+}
+
+.profile-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  color: #fdb927;
+  text-decoration: none;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  transition: all 0.3s ease;
+
+  &:hover {
+    color: #ffd966;
+    transform: translateX(-4px);
+  }
+}
+
+.profile-hero {
+  display: flex;
+  align-items: center;
+  gap: 3rem;
+  margin-bottom: 3rem;
+  background: linear-gradient(
+    145deg,
+    rgba(30, 42, 94, 0.8) 0%,
+    rgba(21, 29, 66, 0.8) 100%
+  );
+  border-radius: 24px;
+  padding: 3rem;
+  border: 2px solid rgba(253, 185, 39, 0.3);
+
+  .hero-img {
+    width: 300px;
+    height: 400px;
+    object-fit: cover;
+    border-radius: 20px;
+    border: 4px solid rgba(253, 185, 39, 0.4);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  }
+
+  .hero-info {
+    flex: 1;
+
+    h1 {
+      font-size: 4rem;
+      font-weight: 900;
+      margin: 0 0 1rem 0;
+      font-family: basketball;
+      color: #fff;
+
+      .hero-number {
+        color: #fdb927;
+        font-size: 5rem;
+      }
+    }
+
+    .hero-position {
+      font-size: 2rem;
+      color: #fdb927;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin: 0;
+      font-family: basketball;
+    }
+  }
+}
+
+.profile-content {
+  section {
+    background: rgba(13, 19, 51, 0.6);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+
+    h3 {
+      font-size: 2rem;
+      color: #fdb927;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin: 0 0 1.5rem 0;
+      font-family: basketball;
+    }
+  }
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1.5rem;
+
+  .stat-box {
+    background: linear-gradient(
+      145deg,
+      rgba(30, 42, 94, 0.6) 0%,
+      rgba(21, 29, 66, 0.6) 100%
+    );
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    border: 1px solid rgba(253, 185, 39, 0.2);
+    transition: all 0.3s ease;
+
+    &:hover {
+      border-color: #fdb927;
+      transform: translateY(-4px);
+    }
+
+    .stat-label {
+      display: block;
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.7);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-value {
+      display: block;
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: #fdb927;
+      font-family: basketball;
+    }
+  }
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+
+  .detail-item {
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    border-left: 4px solid #fdb927;
+
+    strong {
+      color: rgba(255, 255, 255, 0.7);
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 0.05em;
+      margin-right: 0.5rem;
+    }
+  }
+}
+
+.achievements-list {
+  list-style: none;
+  padding: 0;
+
+  li {
+    padding: 1rem 1.5rem;
+    background: rgba(253, 185, 39, 0.1);
+    border-left: 4px solid #fdb927;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: rgba(253, 185, 39, 0.2);
+      transform: translateX(8px);
+    }
+  }
+}
+
+.logo-container {
+  text-align: center;
+  margin-top: 3rem;
+
+  .team-logo {
+    width: 150px;
+    opacity: 0.6;
+    filter: drop-shadow(0 4px 16px rgba(253, 185, 39, 0.3));
+  }
+}
+
+.error-container {
+  text-align: center;
+  padding: 4rem 2rem;
+
+  h1 {
+    font-size: 3rem;
+    color: #fdb927;
+    margin-bottom: 1rem;
+    font-family: basketball;
+  }
+
+  p {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+  }
+
+  .btn {
+    display: inline-block;
+    background: #fdb927;
+    color: #002d62;
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 700;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: #ffd966;
+      transform: translateY(-2px);
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .player-profile-main {
+    padding: 2rem 1.5rem;
+  }
+
+  .profile-hero {
+    flex-direction: column;
+    text-align: center;
+    padding: 2rem;
+
+    .hero-img {
+      width: 200px;
+      height: 300px;
+    }
+
+    .hero-info h1 {
+      font-size: 2.5rem;
+
+      .hero-number {
+        font-size: 3rem;
+      }
+    }
+
+    .hero-position {
+      font-size: 1.5rem;
+    }
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .details-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -38,6 +38,7 @@ p {
   border-radius: 20px;
   top: 50px;
   position: relative;
+  z-index: 1000;
   width: 90%;
   margin: 0 auto;
 }
@@ -1350,7 +1351,6 @@ body.rewards-body {
   color: rgba(255, 255, 255, 0.6);
 }
 
-/* Account page styles - Modern Design */
 .account-body {
   min-height: 100vh;
   background: url(../images/background.jpeg);
@@ -1783,5 +1783,671 @@ body.rewards-body {
   }
   .info-cards {
     gap: 1.5rem;
+  }
+}
+.players-main {
+  background: url(../images/background.jpeg);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: #002d62;
+  min-height: 100vh;
+  padding: 0rem 4rem 4rem 4rem;
+  color: #fff;
+  font-family: basketball;
+  position: relative;
+  z-index: 0;
+}
+.players-main h1 {
+  font-size: 3.5rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  padding-top: 5rem;
+  margin-bottom: 2.5rem;
+  text-transform: uppercase;
+  font-family: basketball;
+}
+
+.players-filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+.players-filter-bar input {
+  padding: 0.75rem 1.25rem;
+  border-radius: 25px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 0.95rem;
+  width: 300px;
+}
+.players-filter-bar input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+.players-filter-bar input:focus {
+  outline: none;
+  border-color: #fdb927;
+  background: rgba(255, 255, 255, 0.15);
+}
+.players-filter-bar .filter-buttons {
+  display: flex;
+  gap: 0.75rem;
+}
+.players-filter-bar .filter-buttons button {
+  background: transparent;
+  color: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  padding: 0.6rem 1.5rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.3s ease;
+}
+.players-filter-bar .filter-buttons button.active {
+  background: #fdb927;
+  color: #002d62;
+  border-color: #fdb927;
+}
+.players-filter-bar .filter-buttons button:hover:not(.active) {
+  border-color: #fdb927;
+  background: rgba(253, 185, 39, 0.1);
+}
+
+.players-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3.5rem;
+  margin: 0 auto;
+  margin-bottom: 3rem;
+  max-width: 1400px;
+}
+
+.player-card {
+  border: 1px solid rgb(255, 255, 255);
+  border-radius: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  padding: 0;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+.player-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 16px 48px rgba(253, 185, 39, 0.4);
+  border-color: #fdb927;
+}
+.player-card .player-img {
+  width: 100%;
+  height: 420px;
+  overflow: hidden;
+  border-radius: 24px 24px 0 0;
+  display: flex;
+  align-items: flex-end;
+}
+.player-card .player-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+}
+.player-card .player-info {
+  background: linear-gradient(180deg, #0d1333 0%, #0a0f28 100%);
+  padding: 1.5rem 1.5rem 1.5rem 1.5rem;
+  border-radius: 0 0 24px 24px;
+}
+.player-card .player-info h2 {
+  font-size: 2.2rem;
+  font-weight: 900;
+  font-family: basketball;
+  margin: 0 0 0.5rem 0;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  text-align: left;
+}
+.player-card .player-info h2 .player-number {
+  color: #fdb927;
+  font-weight: 900;
+  font-size: 3rem;
+}
+.player-card .player-info .player-position {
+  font-size: 1.2rem;
+  color: #fdb927;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 1.2rem;
+  display: block;
+  text-align: left;
+}
+.player-card .player-info .player-stats {
+  font-size: 1.1rem;
+  color: #fff;
+  font-weight: 600;
+  line-height: 1.8;
+  letter-spacing: 0.02em;
+  text-align: left;
+}
+
+.pagination-buttons {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+  align-items: center;
+  margin: 3rem auto 0;
+}
+
+.next-page-btn,
+.prev-page-btn {
+  background: #fdb927;
+  color: #002d62;
+  border: none;
+  border-radius: 12px;
+  padding: 1rem 3rem;
+  font-size: 1.1rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  display: flex;
+  transition: all 0.3s ease;
+}
+.next-page-btn:hover,
+.prev-page-btn:hover {
+  background: #ffd966;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(253, 185, 39, 0.4);
+}
+.next-page-btn:active,
+.prev-page-btn:active {
+  transform: translateY(0);
+}
+
+.player-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, rgba(10, 16, 69, 0.97) 0%, rgba(13, 19, 51, 0.98) 100%);
+  backdrop-filter: blur(10px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+.player-modal.hidden {
+  display: none;
+}
+.player-modal .modal-content {
+  background: linear-gradient(145deg, #1e2a5e 0%, #151d42 100%);
+  border: 2px solid rgba(253, 185, 39, 0.3);
+  border-radius: 32px;
+  padding: 3rem;
+  color: #fff;
+  max-width: 900px;
+  width: 100%;
+  box-shadow: 0 16px 64px rgba(0, 0, 0, 0.6);
+  position: relative;
+}
+.player-modal .modal-content .close-modal {
+  position: absolute;
+  top: 2rem;
+  left: 2rem;
+  background: none;
+  border: none;
+  color: #fdb927;
+  font-size: 1rem;
+  cursor: pointer;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+}
+.player-modal .modal-content .close-modal::before {
+  content: "←";
+  font-size: 1.4rem;
+}
+.player-modal .modal-content .close-modal:hover {
+  color: #ffd966;
+  transform: translateX(-4px);
+}
+.player-modal .modal-content .profile-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 2.5rem;
+  margin-bottom: 2.5rem;
+  padding-top: 1rem;
+}
+.player-modal .modal-content .profile-header .profile-img {
+  width: 200px;
+  height: 200px;
+  border-radius: 20px;
+  object-fit: cover;
+  border: 4px solid rgba(253, 185, 39, 0.4);
+  background: linear-gradient(145deg, #2a3666 0%, #1a2247 100%);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+.player-modal .modal-content .profile-header div {
+  flex: 1;
+}
+.player-modal .modal-content .profile-header div h1 {
+  font-size: 3rem;
+  font-weight: 900;
+  margin-bottom: 0.5rem;
+  color: #fff;
+  font-family: basketball;
+}
+.player-modal .modal-content .profile-header div h1 span {
+  color: #fdb927;
+  font-family: basketball;
+  margin-left: 0.5rem;
+}
+.player-modal .modal-content .profile-header div h2 {
+  font-size: 1.4rem;
+  color: #fdb927;
+  font-family: basketball;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.player-modal .modal-content .profile-stats {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+.player-modal .modal-content .profile-stats h3 {
+  font-size: 1.3rem;
+  color: #fdb927;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 1rem;
+  font-family: basketball;
+}
+.player-modal .modal-content .profile-stats table {
+  width: 100%;
+}
+.player-modal .modal-content .profile-stats table tr {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.player-modal .modal-content .profile-stats table tr:last-child {
+  border-bottom: none;
+}
+.player-modal .modal-content .profile-stats table th,
+.player-modal .modal-content .profile-stats table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+}
+@media (max-width: 1200px) {
+  .player-modal .modal-content .profile-stats table .players-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 768px) {
+  .player-modal .modal-content .profile-stats table .players-main {
+    padding: 2rem 1.5rem;
+  }
+  .player-modal .modal-content .profile-stats table .players-main h1 {
+    font-size: 2.5rem;
+  }
+  .player-modal .modal-content .profile-stats table .players-filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .player-modal .modal-content .profile-stats table .players-filter-bar input {
+    width: 100%;
+  }
+  .player-modal .modal-content .profile-stats table .players-filter-bar .filter-buttons {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .player-modal .modal-content .profile-stats table .players-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  .player-modal .modal-content .profile-stats table .player-modal .modal-content {
+    padding: 2rem 1.5rem;
+  }
+  .player-modal .modal-content .profile-stats table .player-modal .modal-content .profile-header {
+    flex-direction: column;
+    text-align: center;
+  }
+  .player-modal .modal-content .profile-stats table .player-modal .modal-content .profile-header div h1 {
+    font-size: 2rem;
+  }
+  .player-modal .modal-content .profile-stats table .player-modal .modal-content .profile-details {
+    grid-template-columns: 1fr;
+  }
+}
+.player-modal .modal-content .profile-stats table .profile-details {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem 2rem;
+  margin-bottom: 2rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 16px;
+  padding: 1.5rem;
+}
+.player-modal .modal-content .profile-stats table .profile-details div {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.player-modal .modal-content .profile-stats table .profile-details div strong {
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+}
+.player-modal .modal-content .profile-stats table .profile-details div span {
+  color: #fdb927;
+  font-weight: 600;
+}
+.player-modal .modal-content .profile-stats table .profile-achievements {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+.player-modal .modal-content .profile-stats table .profile-achievements h3 {
+  color: #fdb927;
+  font-size: 1.3rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 1rem;
+}
+.player-modal .modal-content .profile-stats table .profile-achievements ul {
+  list-style: none;
+  padding: 0;
+}
+.player-modal .modal-content .profile-stats table .profile-achievements ul li {
+  margin-bottom: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: rgba(253, 185, 39, 0.1);
+  border-left: 4px solid #fdb927;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+}
+.player-modal .modal-content .profile-stats table .profile-achievements ul li::before {
+  content: "🏆";
+  margin-right: 0.75rem;
+}
+.player-modal .modal-content .profile-stats table .profile-logo {
+  text-align: center;
+  margin-top: 2rem;
+}
+.player-modal .modal-content .profile-stats table .profile-logo img {
+  width: 120px;
+  opacity: 0.7;
+  filter: drop-shadow(0 4px 16px rgba(253, 185, 39, 0.3));
+}
+
+.dt-header,
+.dt-footer {
+  background: #232b5c;
+  color: #fff;
+  padding: 1rem 2rem;
+  text-align: center;
+  font-weight: bold;
+}
+
+@media (max-width: 700px) {
+  .players-grid {
+    grid-template-columns: 1fr;
+  }
+  .modal-content {
+    padding: 1rem;
+  }
+}
+@font-face {
+  font-family: "DreamTeam";
+  src: url("/src/fonts/Basketball.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+.player-profile-main {
+  background: url(../images/background.jpeg);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: #002d62;
+  min-height: 100vh;
+  padding: 2rem 4rem 4rem 4rem;
+  color: #fff;
+  font-family: basketball;
+  position: relative;
+  z-index: 0;
+}
+
+.profile-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  color: #fdb927;
+  text-decoration: none;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  transition: all 0.3s ease;
+}
+.back-link:hover {
+  color: #ffd966;
+  transform: translateX(-4px);
+}
+
+.profile-hero {
+  display: flex;
+  align-items: center;
+  gap: 3rem;
+  margin-bottom: 3rem;
+  background: linear-gradient(145deg, rgba(30, 42, 94, 0.8) 0%, rgba(21, 29, 66, 0.8) 100%);
+  border-radius: 24px;
+  padding: 3rem;
+  border: 2px solid rgba(253, 185, 39, 0.3);
+}
+.profile-hero .hero-img {
+  width: 300px;
+  height: 400px;
+  object-fit: cover;
+  border-radius: 20px;
+  border: 4px solid rgba(253, 185, 39, 0.4);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+.profile-hero .hero-info {
+  flex: 1;
+}
+.profile-hero .hero-info h1 {
+  font-size: 4rem;
+  font-weight: 900;
+  margin: 0 0 1rem 0;
+  font-family: basketball;
+  color: #fff;
+}
+.profile-hero .hero-info h1 .hero-number {
+  color: #fdb927;
+  font-size: 5rem;
+}
+.profile-hero .hero-info .hero-position {
+  font-size: 2rem;
+  color: #fdb927;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 0;
+  font-family: basketball;
+}
+
+.profile-content section {
+  background: rgba(13, 19, 51, 0.6);
+  border-radius: 20px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.profile-content section h3 {
+  font-size: 2rem;
+  color: #fdb927;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 1.5rem 0;
+  font-family: basketball;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1.5rem;
+}
+.stats-grid .stat-box {
+  background: linear-gradient(145deg, rgba(30, 42, 94, 0.6) 0%, rgba(21, 29, 66, 0.6) 100%);
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  border: 1px solid rgba(253, 185, 39, 0.2);
+  transition: all 0.3s ease;
+}
+.stats-grid .stat-box:hover {
+  border-color: #fdb927;
+  transform: translateY(-4px);
+}
+.stats-grid .stat-box .stat-label {
+  display: block;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+.stats-grid .stat-box .stat-value {
+  display: block;
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #fdb927;
+  font-family: basketball;
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+.details-grid .detail-item {
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  border-left: 4px solid #fdb927;
+}
+.details-grid .detail-item strong {
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  margin-right: 0.5rem;
+}
+
+.achievements-list {
+  list-style: none;
+  padding: 0;
+}
+.achievements-list li {
+  padding: 1rem 1.5rem;
+  background: rgba(253, 185, 39, 0.1);
+  border-left: 4px solid #fdb927;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+.achievements-list li:hover {
+  background: rgba(253, 185, 39, 0.2);
+  transform: translateX(8px);
+}
+
+.logo-container {
+  text-align: center;
+  margin-top: 3rem;
+}
+.logo-container .team-logo {
+  width: 150px;
+  opacity: 0.6;
+  filter: drop-shadow(0 4px 16px rgba(253, 185, 39, 0.3));
+}
+
+.error-container {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+.error-container h1 {
+  font-size: 3rem;
+  color: #fdb927;
+  margin-bottom: 1rem;
+  font-family: basketball;
+}
+.error-container p {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+}
+.error-container .btn {
+  display: inline-block;
+  background: #fdb927;
+  color: #002d62;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 700;
+  transition: all 0.3s ease;
+}
+.error-container .btn:hover {
+  background: #ffd966;
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .player-profile-main {
+    padding: 2rem 1.5rem;
+  }
+  .profile-hero {
+    flex-direction: column;
+    text-align: center;
+    padding: 2rem;
+  }
+  .profile-hero .hero-img {
+    width: 200px;
+    height: 300px;
+  }
+  .profile-hero .hero-info h1 {
+    font-size: 2.5rem;
+  }
+  .profile-hero .hero-info h1 .hero-number {
+    font-size: 3rem;
+  }
+  .profile-hero .hero-position {
+    font-size: 1.5rem;
+  }
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .details-grid {
+    grid-template-columns: 1fr;
   }
 }

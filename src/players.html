@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pacer Players</title>
+    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="../src/css/styles.css" />
+  </head>
+  <body style="background-color: #002d62; margin: 0; padding: 0">
+    <header class="navbar">
+      <a style="text-decoration: none" href="./dashboard.html">
+        <div class="logo">DREAMTEAM</div>
+      </a>
+      <div class="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <nav>
+        <a href="./dashboard.html">Challenge</a>
+        <span>|</span>
+        <a href="./leadboard.html">Leaderboard</a>
+        <span>|</span>
+        <a href="./chat.html">Chat</a>
+        <span>|</span>
+        <a href="./rewards.html">Rewards</a>
+        <span>|</span>
+        <a href="#" class="active">Players</a>
+        <a
+          href="./account.html"
+          title="Account"
+          style="margin-left: 1rem; display: inline-flex; align-items: center"
+        >
+          <svg
+            width="28"
+            height="28"
+            viewBox="0 0 24 24"
+            fill="none"
+            style="vertical-align: middle"
+          >
+            <circle cx="12" cy="8" r="4" fill="#ffcb05" />
+            <path
+              d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6"
+              stroke="#ffcb05"
+              stroke-width="2"
+              fill="none"
+            />
+          </svg>
+        </a>
+      </nav>
+    </header>
+    <main class="players-main">
+      <h1>CURRENT PACER PLAYERS</h1>
+      <div class="players-filter-bar">
+        <input
+          type="text"
+          id="player-search"
+          placeholder="Search player by name"
+        />
+        <div class="filter-buttons">
+          <button data-filter="all" class="active">ALL</button>
+          <button data-filter="guards">GUARDS</button>
+          <button data-filter="forwards">FORWARDS</button>
+          <button data-filter="centers">CENTERS</button>
+        </div>
+      </div>
+      <div class="players-grid" id="players-grid">
+        <!-- Player cards will be injected here by JS -->
+      </div>
+      <div class="pagination-buttons">
+        <button id="prev-page" class="prev-page-btn" style="display: none">
+          PREVIOUS PAGE
+        </button>
+        <button id="next-page" class="next-page-btn">NEXT PAGE</button>
+      </div>
+    </main>
+    <div id="player-modal" class="player-modal hidden">
+      <!-- Player profile details will be injected here by JS -->
+    </div>
+    <footer class="dt-footer">
+      <div>DreamTeam - Pacer Fan App</div>
+      <!-- ...footer links... -->
+    </footer>
+    <script type="module" src="./main.js" defer></script>
+    <script src="js/nav.js" defer></script>
+    <script src="js/players.js" defer></script>
+  </body>
+</html>
