@@ -154,7 +154,7 @@ const players = [
     id: "jay-huff",
     name: "Jay Huff",
     number: 32,
-    image: "images/player-placeholder.png",
+    image: "images/huff.avif",
     position: "Center",
     stats: {
       points: 7.8,
@@ -179,7 +179,7 @@ const players = [
     id: "obi-toppin",
     name: "Obi Toppin",
     number: 1,
-    image: "images/obiCutout.png",
+    image: "images/obi.webp",
     position: "Forward",
     stats: {
       points: 10.3,
@@ -203,7 +203,7 @@ const players = [
     id: "ben-sheppard",
     name: "Ben Sheppard",
     number: 26,
-    image: "images/shepCutout.png",
+    image: "images/shep.webp",
     position: "Guard",
     stats: {
       points: 5.1,
@@ -227,7 +227,7 @@ const players = [
     id: "jarace-walker",
     name: "Jarace Walker",
     number: 5,
-    image: "images/jaraceCutout.png",
+    image: "images/jarace.avif",
     position: "Forward",
     stats: {
       points: 3.8,
@@ -251,7 +251,7 @@ const players = [
     id: "isaiah-jackson",
     name: "Isaiah Jackson",
     number: 22,
-    image: "images/JacksonCutout.jpg",
+    image: "images/jackson.png",
     position: "Forward",
     stats: {
       points: 8.2,
@@ -276,7 +276,7 @@ const players = [
     id: "johnny-furphy",
     name: "Johnny Furphy",
     number: 12,
-    image: "images/fruphCutout.png",
+    image: "images/furph.avif",
     position: "Forward",
     stats: {
       points: 2.5,
@@ -300,7 +300,7 @@ const players = [
     id: "taelon-peter",
     name: "Taelon Peter",
     number: 4,
-    image: "images/player-placeholder.png",
+    image: "images/peter.avif",
     position: "Guard",
     stats: {
       points: 1.8,
@@ -324,7 +324,7 @@ const players = [
     id: "kam-jones",
     name: "Kam Jones",
     number: 7,
-    image: "images/player-placeholder.png",
+    image: "images/kam.png",
     position: "Guard",
     stats: {
       points: 0.0,
@@ -348,7 +348,7 @@ const players = [
     id: "tony-bradley",
     name: "Tony Bradley",
     number: 13,
-    image: "images/player-placeholder.png",
+    image: "images/bradley.webp",
     position: "Center",
     stats: {
       points: 4.9,
@@ -370,34 +370,10 @@ const players = [
     logo: "images/reggieandsiakam.png",
   },
   {
-    id: "garrison-mathews",
-    name: "Garrison Mathews",
-    number: 24,
-    image: "images/player-placeholder.png",
-    position: "Guard",
-    stats: {
-      points: 4.0,
-      rebounds: 0.7,
-      assists: 0.5,
-      steals: 0.3,
-      fg: "42.0%",
-      threeP: "38.5%",
-      ft: "85.0%",
-    },
-    height: "6'5\"",
-    weight: "215 lbs",
-    age: 29,
-    college: "Lipscomb",
-    draft: "Undrafted",
-    experience: "6 years",
-    achievements: ["ASUN Player of the Year [2019]"],
-    logo: "images/reggieandsiakam.png",
-  },
-  {
     id: "jeremiah-robinson-earl",
     name: "Jeremiah Robinson-Earl",
     number: 25,
-    image: "images/player-placeholder.png",
+    image: "images/jre.png",
     position: "Forward",
     stats: {
       points: 4.8,
@@ -421,7 +397,7 @@ const players = [
     id: "quenton-jackson",
     name: "Quenton Jackson",
     number: 29,
-    image: "images/QuentonCutout.png",
+    image: "images/Quenton.avif",
     position: "Guard",
     stats: {
       points: 11.8,
@@ -445,7 +421,7 @@ const players = [
     id: "ethan-thompson",
     name: "Ethan Thompson",
     number: 55,
-    image: "images/player-placeholder.png",
+    image: "images/ethan.webp",
     position: "Guard",
     stats: {
       points: 2.0,

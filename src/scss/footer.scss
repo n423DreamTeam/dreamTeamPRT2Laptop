@@ -1,0 +1,199 @@
+@use "variables" as *;
+
+.footer {
+  background: radial-gradient(
+      1200px 400px at 80% -20%,
+      rgba(255, 203, 5, 0.08),
+      transparent 60%
+    ),
+    linear-gradient(180deg, #121212 0%, #1b1b1b 100%);
+  border-top: 2px solid rgba(255, 203, 5, 0.2);
+  padding: 3rem 2rem 1.5rem;
+  color: rgba(255, 255, 255, 0.85);
+  position: relative;
+  z-index: 1;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      #ffd166 50%,
+      transparent 100%
+    );
+  }
+
+  .footer-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr; // three-column layout
+    gap: 3rem;
+    font-family: mon;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid rgba(255, 203, 5, 0.1);
+  }
+
+  .footer-section {
+    h3 {
+      font-family: $font-heading;
+      font-size: 1.5rem;
+      color: #fff;
+      margin-bottom: 1rem;
+      font-weight: 700;
+      position: relative;
+
+      &::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        bottom: -6px;
+        width: 36px;
+        height: 2px;
+        background: linear-gradient(90deg, #ffd166, rgba(255, 203, 5, 0));
+      }
+    }
+
+    p {
+      color: rgba(255, 255, 255, 0.7);
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+      font-size: 0.95rem;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+
+      li {
+        margin-bottom: 0.75rem;
+
+        a {
+          color: rgba(255, 255, 255, 0.85);
+          text-decoration: none;
+          transition: all 0.25s ease;
+          font-size: 0.95rem;
+          display: inline-block;
+          padding: 0.4rem 0.75rem;
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 203, 5, 0.15);
+
+          &:hover {
+            color: #121212;
+            background: rgba(255, 203, 5, 0.9);
+            border-color: #ffd166;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(255, 203, 5, 0.25);
+          }
+        }
+      }
+    }
+  }
+
+  .footer-brand {
+    .brand-name {
+      font-family: $font-heading;
+      font-size: 2rem;
+      background: linear-gradient(135deg, #ffd166 0%, #ffcb05 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.5rem;
+      font-weight: 900;
+      letter-spacing: 2px;
+    }
+
+    .tagline {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 1.2rem;
+      font-family: basketball;
+      margin-bottom: 1.5rem;
+    }
+  }
+
+  .social-links {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+
+    a {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid rgba(255, 203, 5, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffd166;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      font-size: 1.2rem;
+
+      &:hover {
+        background: rgba(255, 203, 5, 0.1);
+        border-color: #ffd166;
+        transform: translateY(-3px);
+        box-shadow: 0 4px 15px rgba(255, 203, 5, 0.3);
+      }
+    }
+  }
+
+  .footer-bottom {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding-top: 1.5rem;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.85rem;
+  }
+
+  // Credit badge style
+  .credit {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, #ffd166 0%, #ffcb05 100%);
+    color: #002d62;
+    border-radius: 999px;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+    padding: 0.45rem 0.75rem;
+    width: 350px;
+    box-shadow: 0 6px 22px rgba(255, 203, 5, 0.25),
+      inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+
+    &::before {
+      content: "★";
+      font-size: 0.9rem;
+    }
+  }
+
+  // Responsive design
+  @media (max-width: 1024px) {
+    .footer-content {
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    padding: 2rem 1.5rem 1rem;
+
+    .footer-content {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+
+    .footer-brand .brand-name {
+      font-size: 1.5rem;
+    }
+  }
+}

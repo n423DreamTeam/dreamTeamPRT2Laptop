@@ -1,4 +1,3 @@
-// Player data (same as in players.js)
 const players = [
   {
     id: "tyrese-haliburton",
@@ -46,7 +45,7 @@ const players = [
     draft: "2016: 1st Rd. 27th",
     experience: "8 years",
     achievements: ["NBA Champion [2019]", "2x NBA All-Star"],
-    logo: "images/reggieandsiakam.png",
+    logo: "images/pacerslogo.png",
   },
   {
     id: "andrew-nembhard",
@@ -97,7 +96,7 @@ const players = [
     draft: "2020: 1st Rd. 14th",
     experience: "4 years",
     achievements: ["SEC Freshman of the Year [2019]"],
-    logo: "images/reggieandsiakam.png",
+    logo: "images/pacerslogo.png",
   },
   {
     id: "benedict-mathurin",
@@ -124,7 +123,7 @@ const players = [
       "NBA All-Rookie Second Team [2023]",
       "Pac-12 Player of the Year [2022]",
     ],
-    logo: "images/reggieandsiakam.png",
+    logo: "images/pacerslogo.png",
   },
   {
     id: "tj-mcconnell",
@@ -148,38 +147,13 @@ const players = [
     draft: "Undrafted",
     experience: "10 years",
     achievements: ["NBA Hustle Award [2021]"],
-    logo: "images/reggieandsiakam.png",
-  },
-  {
-    id: "myles-turner",
-    name: "Myles Turner",
-    number: 33,
-    image: "images/player-placeholder.png",
-    position: "Center",
-    stats: {
-      points: 17.1,
-      rebounds: 6.9,
-      assists: 1.5,
-      steals: 0.9,
-      blocks: 1.9,
-      fg: "48.5%",
-      threeP: "35.8%",
-      ft: "78.9%",
-    },
-    height: "6'11\"",
-    weight: "250 lbs",
-    age: 28,
-    college: "Texas",
-    draft: "2015: 1st Rd. 11th",
-    experience: "9 years",
-    achievements: ["2x NBA Blocks Leader [2019, 2021]"],
-    logo: "images/reggieandsiakam.png",
+    logo: "images/pacerslogo.png",
   },
   {
     id: "jay-huff",
     name: "Jay Huff",
     number: 32,
-    image: "images/player-placeholder.png",
+    image: "images/HuffCutout.jpg",
     position: "Center",
     stats: {
       points: 7.8,
@@ -198,7 +172,7 @@ const players = [
     draft: "Undrafted",
     experience: "4 years",
     achievements: ["ACC Defensive Player of the Year [2021]"],
-    logo: "images/reggieandsiakam.png",
+    logo: "images/pacerslogo.png",
   },
   {
     id: "obi-toppin",
@@ -222,7 +196,7 @@ const players = [
     draft: "2020: 1st Rd. 8th",
     experience: "4 years",
     achievements: ["Naismith College Player of the Year [2020]"],
-    logo: "images/reggieandsiakam.png",
+    logo: "images/pacerslogo.png",
   },
   {
     id: "ben-sheppard",
@@ -246,7 +220,7 @@ const players = [
     draft: "2023: 2nd Rd. 26th",
     experience: "1 year",
     achievements: ["Ohio Valley Conference Player of the Year [2023]"],
-    logo: "images/reggieandsiakam.png",
+    logo: "images/pacerslogo.png",
   },
   {
     id: "jarace-walker",
@@ -270,7 +244,7 @@ const players = [
     draft: "2023: 1st Rd. 8th",
     experience: "1 year",
     achievements: ["AAC All-Rookie Team [2023]"],
-    logo: "images/reggieandsiakam.png",
+    logo: "images/pacerslogo.png",
   },
   {
     id: "isaiah-jackson",
@@ -295,7 +269,7 @@ const players = [
     draft: "2021: 1st Rd. 22nd",
     experience: "4 years",
     achievements: ["SEC All-Freshman Team [2021]"],
-    logo: "images/reggieandsiakam.png",
+    logo: "images/pacerslogo.png",
   },
   {
     id: "johnny-furphy",
@@ -319,7 +293,7 @@ const players = [
     draft: "2024: 2nd Rd. 35th",
     experience: "Rookie",
     achievements: ["Big 12 All-Freshman Team [2024]"],
-    logo: "images/reggieandsiakam.png",
+    logo: "images/pacerslogo.png",
   },
   {
     id: "taelon-peter",
@@ -343,7 +317,7 @@ const players = [
     draft: "Undrafted",
     experience: "Rookie",
     achievements: ["Southern Conference Player of the Year [2024]"],
-    logo: "images/reggieandsiakam.png",
+    logo: "images/pacerslogo.png",
   },
   {
     id: "kam-jones",
@@ -367,7 +341,7 @@ const players = [
     draft: "2024: 2nd Rd. 49th",
     experience: "Rookie",
     achievements: ["Big East Player of the Year [2024]"],
-    logo: "images/reggieandsiakam.png",
+    logo: "images/pacerslogo.png",
   },
   {
     id: "tony-bradley",
@@ -392,7 +366,7 @@ const players = [
     draft: "2017: 1st Rd. 28th",
     experience: "7 years",
     achievements: ["NCAA Champion [2017]"],
-    logo: "images/reggieandsiakam.png",
+    logo: "images/pacerslogo.png",
   },
   {
     id: "garrison-mathews",
@@ -416,7 +390,7 @@ const players = [
     draft: "Undrafted",
     experience: "6 years",
     achievements: ["ASUN Player of the Year [2019]"],
-    logo: "images/reggieandsiakam.png",
+    logo: "images/pacerslogo.png",
   },
   {
     id: "jeremiah-robinson-earl",
@@ -440,7 +414,7 @@ const players = [
     draft: "2021: 2nd Rd. 32nd",
     experience: "4 years",
     achievements: ["NCAA Champion [2018]"],
-    logo: "images/reggieandsiakam.png",
+    logo: "images/pacerslogo.png",
   },
   {
     id: "quenton-jackson",
@@ -464,7 +438,7 @@ const players = [
     draft: "Undrafted",
     experience: "3 years",
     achievements: ["SEC Sixth Man of the Year [2022]"],
-    logo: "images/reggieandsiakam.png",
+    logo: "images/pacerslogo.png",
   },
   {
     id: "ethan-thompson",
@@ -488,7 +462,7 @@ const players = [
     draft: "Undrafted",
     experience: "Rookie",
     achievements: ["All-Pac-12 First Team [2021]"],
-    logo: "images/reggieandsiakam.png",
+    logo: "images/pacerslogo.png",
   },
 ];
 
@@ -515,6 +489,9 @@ if (player) {
     player.number
   }</span></h1>
           <h2 class="hero-position">${player.position}</h2>
+        </div>
+        <div class="logo-container">
+          <img src="${player.logo}" alt="Pacers Logo" class="team-logo">
         </div>
       </div>
 
@@ -579,10 +556,6 @@ if (player) {
             ${player.achievements.map((a) => `<li>🏆 ${a}</li>`).join("")}
           </ul>
         </section>
-
-        <div class="logo-container">
-          <img src="${player.logo}" alt="Pacers Logo" class="team-logo">
-        </div>
       </div>
     </div>
   `;

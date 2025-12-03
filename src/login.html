@@ -11,7 +11,7 @@
       <a href="/index.html" class="back-btn">←</a>
       <h1>LOGIN</h1>
       <form id="login-form">
-        <label for="username">Username</label>
+        <label for="username">Username or Email</label>
         <input type="text" id="email" placeholder="Enter username" />
 
         <label for="password">Password</label>
@@ -21,6 +21,32 @@
 
         <button id="login-btn" type="submit" class="btn primary">LOG IN</button>
       </form>
+    </div>
+
+    <!-- Forgot Password Modal -->
+    <div id="forgot-password-modal" class="modal" style="display: none">
+      <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h2>Reset Password</h2>
+        <p>
+          Enter your email address and we'll send you a link to reset your
+          password.
+        </p>
+        <p class="note">
+          <strong>Note:</strong> Use the same email address you used to create
+          your account.
+        </p>
+        <form id="forgot-password-form">
+          <input
+            type="email"
+            id="reset-email"
+            placeholder="Enter your email"
+            required
+          />
+          <button type="submit" class="btn primary">Send Reset Link</button>
+        </form>
+        <div id="reset-message" class="reset-message"></div>
+      </div>
     </div>
 
     <script type="module" src="/src/main.js"></script>

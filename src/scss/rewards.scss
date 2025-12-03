@@ -2,7 +2,11 @@
 @use "mixins" as *;
 
 body.rewards-body {
-  background: radial-gradient(circle at center, #0b1839 25%, #000 90%);
+  background: url(../images/background.jpeg);
+  background-position: top;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   color: $text-light;
   font-family: $font-body;
   margin: 0;
@@ -25,21 +29,66 @@ body.rewards-body {
   display: flex;
   justify-content: space-between;
   width: 100%;
+  max-width: 900px;
   align-items: center;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 203, 5, 0.2);
+  position: relative;
+  overflow: hidden;
+  animation: slideUp 0.6s ease-out;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #ffd166 0%, #5b7fff 100%);
+  }
 
   h1 {
     font-family: $font-heading;
-    font-size: 3rem;
+    font-size: 3.5rem;
+    letter-spacing: 2px;
+    background: linear-gradient(135deg, #ffd166 0%, #ffcb05 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0;
+    text-shadow: 0 0 30px rgba(255, 203, 5, 0.3);
   }
 
   .daily {
-    background: #ffcb05;
+    background: linear-gradient(135deg, #ffcb05, #ffd166);
     color: #0b1839;
     font-weight: 700;
-    padding: 0.5rem 1.2rem;
-    border-radius: 6px;
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
     text-transform: uppercase;
     font-size: 0.9rem;
+    box-shadow: 0 4px 15px rgba(255, 203, 5, 0.3);
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: block;
+    cursor: pointer;
+
+    p {
+      margin: 0;
+      color: #0b1839;
+    }
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 203, 5, 0.4);
+    }
+  }
+
+  a {
+    text-decoration: none;
   }
 }
 
@@ -86,10 +135,21 @@ body.rewards-body {
       padding: 1.5rem;
       text-align: center;
       transition: 0.3s ease;
+      position: relative;
 
       &:hover {
         transform: scale(1.03);
         background: rgba(255, 255, 255, 0.1);
+      }
+
+      &.unlocked {
+        background: rgba(255, 203, 5, 0.1);
+        border-color: rgba(255, 203, 5, 0.5);
+        box-shadow: 0 0 20px rgba(255, 203, 5, 0.2);
+
+        .icon {
+          filter: drop-shadow(0 0 10px rgba(255, 203, 5, 0.8));
+        }
       }
 
       .icon {
@@ -109,6 +169,14 @@ body.rewards-body {
         color: rgba(255, 255, 255, 0.8);
       }
 
+      .badge-status {
+        color: #ffcb05;
+        font-weight: 700;
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+        text-transform: uppercase;
+      }
+
       .progress {
         background: rgba(255, 255, 255, 0.1);
         border-radius: 10px;
@@ -119,6 +187,7 @@ body.rewards-body {
         div {
           background: #ffcb05;
           height: 100%;
+          transition: width 0.3s ease;
         }
       }
 
@@ -130,10 +199,4 @@ body.rewards-body {
   }
 }
 
-.footer {
-  background: rgba(10, 15, 45, 0.95);
-  padding: 1rem;
-  text-align: center;
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.6);
-}
+// Footer styles moved to footer.scss

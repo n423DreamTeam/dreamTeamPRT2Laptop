@@ -53,18 +53,117 @@ async function compressImage(file, maxWidth = 1024, quality = 0.8) {
 
 function initLogout() {
   const logoutBtn = document.getElementById("logout-btn");
-  if (!logoutBtn) return;
-  logoutBtn.addEventListener("click", async () => {
+  console.log("initLogout called, button found:", !!logoutBtn);
+  if (!logoutBtn) {
+    console.error("Logout button not found in DOM");
+    return;
+  }
+  logoutBtn.addEventListener("click", async (e) => {
+    e.preventDefault(); // Prevent any default behavior
     try {
-      const confirmed = window.confirm("Log out now?");
-      if (!confirmed) return;
+      console.log("Logout button clicked");
+
+      // Show custom styled confirmation modal
+      const confirmed = await showConfirmModal(
+        "Log Out",
+        "Are you sure you want to log out?"
+      );
+
+      if (!confirmed) {
+        console.log("Logout cancelled by user");
+        return;
+      }
+      console.log("Signing out...");
       await signOut(auth);
       localStorage.removeItem("dt_username");
+      console.log("Sign out successful, redirecting...");
       window.location.href = "./login.html";
     } catch (e) {
       console.error("Logout failed:", e);
       showToast("Logout failed. Please try again.", "error");
     }
+  });
+  console.log("Logout button event listener attached");
+}
+
+// Custom styled confirmation modal
+function showConfirmModal(title, message) {
+  return new Promise((resolve) => {
+    const modal = document.createElement("div");
+    modal.style.cssText = `
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.7); display: flex;
+      justify-content: center; align-items: center; z-index: 10000;
+    `;
+
+    const popup = document.createElement("div");
+    popup.style.cssText = `
+      background: linear-gradient(135deg, #5b7fff, #3f4dd3);
+      border: 2px solid #ffcb05; border-radius: 20px;
+      padding: 2.5rem; text-align: center; max-width: 400px; width: 90%;
+      box-shadow: 0 0 30px rgba(91, 127, 255, 0.6);
+      color: white; font-family: Arial, sans-serif;
+    `;
+
+    popup.innerHTML = `
+      <h2 style="font-size: 1.8rem; margin: 0 0 1rem 0; color: #ffcb05;">${title}</h2>
+      <p style="font-size: 1.1rem; margin: 1rem 0; color: rgba(255,255,255,0.9);">${message}</p>
+      <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center;">
+        <button id="confirm-yes" style="
+          background: linear-gradient(135deg, #ffcb05, #ffb300);
+          color: #000; border: none; border-radius: 10px;
+          padding: 0.75rem 2rem; font-weight: bold; font-size: 1rem;
+          cursor: pointer; transition: 0.3s ease;
+        ">Yes</button>
+        <button id="confirm-no" style="
+          background: rgba(255,255,255,0.2); color: #fff;
+          border: 2px solid rgba(255,255,255,0.5); border-radius: 10px;
+          padding: 0.75rem 2rem; font-weight: bold; font-size: 1rem;
+          cursor: pointer; transition: 0.3s ease;
+        ">Cancel</button>
+      </div>
+    `;
+
+    modal.appendChild(popup);
+    document.body.appendChild(modal);
+
+    // Add hover effects
+    const yesBtn = popup.querySelector("#confirm-yes");
+    const noBtn = popup.querySelector("#confirm-no");
+
+    yesBtn.addEventListener("mouseenter", () => {
+      yesBtn.style.transform = "scale(1.05)";
+      yesBtn.style.boxShadow = "0 0 20px rgba(255, 203, 5, 0.8)";
+    });
+    yesBtn.addEventListener("mouseleave", () => {
+      yesBtn.style.transform = "scale(1)";
+      yesBtn.style.boxShadow = "none";
+    });
+
+    noBtn.addEventListener("mouseenter", () => {
+      noBtn.style.transform = "scale(1.05)";
+    });
+    noBtn.addEventListener("mouseleave", () => {
+      noBtn.style.transform = "scale(1)";
+    });
+
+    yesBtn.addEventListener("click", () => {
+      modal.remove();
+      resolve(true);
+    });
+
+    noBtn.addEventListener("click", () => {
+      modal.remove();
+      resolve(false);
+    });
+
+    // Close on background click
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) {
+        modal.remove();
+        resolve(false);
+      }
+    });
   });
 }
 

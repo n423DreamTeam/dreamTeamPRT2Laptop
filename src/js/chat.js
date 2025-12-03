@@ -1,4 +1,13 @@
-import { collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, getDoc, doc } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  onSnapshot,
+  query,
+  orderBy,
+  serverTimestamp,
+  getDoc,
+  doc,
+} from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { app, db } from "../../firebase.js";
 
@@ -11,33 +20,67 @@ const messagesDiv = document.getElementById("messages");
 
 // Load messages in real-time
 if (messagesDiv) {
-  const chatQuery = query(collection(db, "messages"), orderBy("timestamp", "asc"));
+  const chatQuery = query(
+    collection(db, "messages"),
+    orderBy("timestamp", "asc")
+  );
 
-  onSnapshot(chatQuery, (snapshot) => {
+  onSnapshot(chatQuery, async (snapshot) => {
     messagesDiv.innerHTML = "";
 
-    snapshot.forEach(async (docSnap) => {
+    // Process messages sequentially to maintain order
+    for (const docSnap of snapshot.docs) {
       const msg = docSnap.data();
       const time = msg.timestamp
-        ? new Date(msg.timestamp.toDate()).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+        ? new Date(msg.timestamp.toDate()).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          })
         : "Just now";
 
       const div = document.createElement("div");
       div.classList.add("message");
 
-      // avatar: prefer photoURL in message, else initials
+      // Check if this message is from current user
+      const isSelf = auth.currentUser && msg.uid === auth.currentUser.uid;
+      if (isSelf) {
+        div.classList.add("self");
+      }
+
+      // Try to get user's profile photo from Firestore
+      let photoURL = msg.photoURL;
+      if (msg.uid && !photoURL) {
+        try {
+          const userDoc = await getDoc(doc(db, "users", msg.uid));
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            photoURL = userData.photoURL || null;
+          }
+        } catch (err) {
+          console.warn("Could not load user photo:", err);
+        }
+      }
+
+      // avatar: prefer photoURL, else initials
       let avatarHtml = "";
-      if (msg.photoURL) {
-        avatarHtml = `<div class="avatar"><img src="${msg.photoURL}" alt="avatar"/></div>`;
+      if (photoURL) {
+        avatarHtml = `<div class="avatar"><img src="${photoURL}" alt="avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;"/></div>`;
       } else {
         const initials = msg.displayName
-          ? msg.displayName.split(" ").map(n=>n[0]).join("").slice(0,2).toUpperCase()
-          : (msg.userInitials || "??");
+          ? msg.displayName
+              .split(" ")
+              .map((n) => n[0])
+              .join("")
+              .slice(0, 2)
+              .toUpperCase()
+          : msg.userInitials || "??";
         avatarHtml = `<div class="avatar">${initials}</div>`;
       }
 
       // name line: displayName and optional @username
-      const nameLine = `${msg.displayName || msg.user || "Unknown"}${msg.username ? ` <span class=\"username\">@${msg.username}</span>` : ""}`;
+      const nameLine = `${msg.displayName || msg.user || "Unknown"}${
+        msg.username ? ` <span class="username">@${msg.username}</span>` : ""
+      }`;
 
       div.innerHTML = `
         ${avatarHtml}
@@ -48,8 +91,9 @@ if (messagesDiv) {
       `;
 
       messagesDiv.appendChild(div);
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    });
+    }
+
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
   });
 }
 
@@ -61,32 +105,37 @@ if (msgForm) {
     if (!text) return;
 
     const currentUser = auth.currentUser;
+
+    if (!currentUser) {
+      alert("Please log in to send messages.");
+      return;
+    }
+
     let payload = {
       text,
       timestamp: serverTimestamp(),
+      uid: currentUser.uid,
+      displayName: currentUser.displayName || "User",
     };
 
-    if (currentUser) {
-      payload.uid = currentUser.uid;
-      payload.displayName = currentUser.displayName || null;
-      payload.photoURL = currentUser.photoURL || null;
-
-      // try to load username from Firestore users/{uid}
-      try {
-        const uDoc = await getDoc(doc(db, "users", currentUser.uid));
-        if (uDoc.exists()) {
-          const data = uDoc.data();
-          if (data.username) payload.username = data.username;
-        }
-      } catch (err) {
-        console.warn("Could not load username for message:", err);
+    // Load username and photoURL from Firestore users/{uid}
+    try {
+      const uDoc = await getDoc(doc(db, "users", currentUser.uid));
+      if (uDoc.exists()) {
+        const data = uDoc.data();
+        if (data.username) payload.username = data.username;
+        if (data.photoURL) payload.photoURL = data.photoURL;
       }
-    } else {
-      payload.displayName = "Guest";
+    } catch (err) {
+      console.warn("Could not load user data for message:", err);
     }
 
-    await addDoc(collection(db, "messages"), payload);
-
-    msgInput.value = "";
+    try {
+      await addDoc(collection(db, "messages"), payload);
+      msgInput.value = "";
+    } catch (err) {
+      console.error("Failed to send message:", err);
+      alert("Failed to send message. Please try again.");
+    }
   });
 }

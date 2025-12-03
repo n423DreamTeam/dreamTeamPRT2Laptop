@@ -1,4 +1,5 @@
 import "./scss/styles.scss";
+import "./js/scroll-animations.js";
 
 import {
   getAuth,
@@ -9,6 +10,7 @@ import {
   signOut,
   onAuthStateChanged,
   updateProfile,
+  sendPasswordResetEmail,
 } from "firebase/auth";
 import { app } from "../firebase.js";
 // Use shared Firebase app instance
@@ -110,6 +112,77 @@ if (signOutBtn) {
       })
       .catch((error) => {
         console.error("Error signing out:", error);
+      });
+  });
+}
+
+// ✅ FORGOT PASSWORD
+const forgotLink = document.querySelector(".forgot-link");
+const forgotModal = document.getElementById("forgot-password-modal");
+const closeModal = document.querySelector(".close-modal");
+const forgotPasswordForm = document.getElementById("forgot-password-form");
+
+if (forgotLink && forgotModal) {
+  forgotLink.addEventListener("click", (e) => {
+    e.preventDefault();
+    forgotModal.style.display = "flex";
+  });
+}
+
+if (closeModal && forgotModal) {
+  closeModal.addEventListener("click", () => {
+    forgotModal.style.display = "none";
+    document.getElementById("reset-message").textContent = "";
+  });
+}
+
+// Close modal when clicking outside
+if (forgotModal) {
+  forgotModal.addEventListener("click", (e) => {
+    if (e.target === forgotModal) {
+      forgotModal.style.display = "none";
+      document.getElementById("reset-message").textContent = "";
+    }
+  });
+}
+
+if (forgotPasswordForm) {
+  forgotPasswordForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const email = document.getElementById("reset-email").value;
+    const messageDiv = document.getElementById("reset-message");
+
+    console.log("Attempting to send password reset email to:", email);
+    messageDiv.textContent = "Sending...";
+    messageDiv.style.color = "#ffc107";
+
+    sendPasswordResetEmail(auth, email)
+      .then(() => {
+        console.log("✅ Password reset email sent successfully to:", email);
+        messageDiv.textContent =
+          "Password reset email sent! Check your inbox (and spam folder).";
+        messageDiv.style.color = "#4CAF50";
+        document.getElementById("reset-email").value = "";
+        setTimeout(() => {
+          forgotModal.style.display = "none";
+          messageDiv.textContent = "";
+        }, 5000);
+      })
+      .catch((error) => {
+        console.error("❌ Error sending password reset email:", error);
+        console.error("Error code:", error.code);
+        console.error("Error message:", error.message);
+
+        // More user-friendly error messages
+        let userMessage = error.message;
+        if (error.code === "auth/user-not-found") {
+          userMessage = "No account found with this email address.";
+        } else if (error.code === "auth/invalid-email") {
+          userMessage = "Please enter a valid email address.";
+        }
+
+        messageDiv.textContent = userMessage;
+        messageDiv.style.color = "#f44336";
       });
   });
 }

@@ -1,3 +1,66 @@
+@use "variables" as *;
+@use "mixins" as *;
+.players-main {
+  background: url(../images/background.jpeg);
+  background-position: top;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  position: absolute;
+  min-height: 100vh;
+  padding: 0rem 4rem 4rem 4rem;
+  color: #fff;
+  font-family: basketball;
+  position: relative;
+  z-index: 0;
+
+  h1 {
+    font-size: 3.5rem;
+    font-weight: 900;
+    letter-spacing: 0.02em;
+    padding-top: 5rem;
+    margin-bottom: 2.5rem;
+    text-transform: uppercase;
+    font-family: basketball;
+  }
+}
+
+.players-filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+  input {
+    padding: 0.75rem 1.25rem;
+    border-radius: 25px;
+
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-size: 0.95rem;
+    width: 300px;
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+  }
+  &:focus {
+    outline: none;
+  }
+  select {
+    padding: 0.75rem 1.25rem;
+    border-radius: 25px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-size: 0.95rem;
+    width: 200px;
+    option {
+      background: #0a0f28;
+      color: #fff;
+    }
+  }
+}
 .players-main {
   background: url(../images/background.jpeg);
   background-position: center;
@@ -270,9 +333,6 @@
         height: 200px;
         border-radius: 20px;
         object-fit: cover;
-        border: 4px solid rgba(253, 185, 39, 0.4);
-        background: linear-gradient(145deg, #2a3666 0%, #1a2247 100%);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
       }
 
       div {
@@ -334,57 +394,6 @@
         td {
           padding: 0.75rem 1rem;
           text-align: left;
-        }
-        @media (max-width: 1200px) {
-          .players-grid {
-            grid-template-columns: repeat(2, 1fr);
-          }
-        }
-
-        @media (max-width: 768px) {
-          .players-main {
-            padding: 2rem 1.5rem;
-
-            h1 {
-              font-size: 2.5rem;
-            }
-          }
-
-          .players-filter-bar {
-            flex-direction: column;
-            align-items: stretch;
-
-            input {
-              width: 100%;
-            }
-
-            .filter-buttons {
-              justify-content: center;
-              flex-wrap: wrap;
-            }
-          }
-
-          .players-grid {
-            grid-template-columns: 1fr;
-            gap: 1.5rem;
-          }
-
-          .player-modal .modal-content {
-            padding: 2rem 1.5rem;
-
-            .profile-header {
-              flex-direction: column;
-              text-align: center;
-
-              div h1 {
-                font-size: 2rem;
-              }
-            }
-
-            .profile-details {
-              grid-template-columns: 1fr;
-            }
-          }
         }
         .profile-details {
           display: grid;

@@ -4,6 +4,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DreamTeam | Chat</title>
+    <link rel="icon" type="image/x-icon" href="/src/images/favicon.ico" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/src/images/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="/src/images/favicon-16x16.png"
+    />
     <link rel="stylesheet" href="/src/css/styles.css" />
   </head>
   <body class="chat-body">
@@ -83,12 +96,42 @@
     </main>
 
     <footer class="footer">
-      <p>DREAMTEAM © 2025 | Pacers Fan App</p>
+      <div class="footer-content">
+        <div class="footer-section footer-brand">
+          <h2 class="brand-name">DREAMTEAM</h2>
+          <p class="tagline">Pacer Fan App</p>
+          <p>
+            Your ultimate companion for Pacers fans. Track stats, join
+            challenges, and connect with fellow fans.
+          </p>
+        </div>
+        <div class="footer-section">
+          <h3>Navigate</h3>
+          <ul>
+            <li><a href="/src/dashboard.html">Daily Challenge</a></li>
+            <li><a href="/src/leadboard.html">Leaderboard</a></li>
+            <li><a href="/src/players.html">Players</a></li>
+            <li><a href="/src/chat.html">Chat</a></li>
+            <li><a href="/src/rewards.html">Rewards</a></li>
+            <li><a href="/src/account.html">Account</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h3>About</h3>
+          <ul>
+            <li class="credit">
+              App made by
+              <a href="https://www.meganpalmquist.com/">Megan Palmquist</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>DREAMTEAM © 2025 — Made by Megan</p>
+      </div>
     </footer>
-
     <script type="module" src="/src/main.js" defer></script>
     <script type="module" src="/src/js/nav.js" defer></script>
-    <script type="module" src="/src/js/dashboard.js" defer></script>
     <script type="module" src="/src/js/chat.js" defer></script>
   </body>
 </html>

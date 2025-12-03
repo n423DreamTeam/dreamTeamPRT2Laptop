@@ -40,10 +40,18 @@ function subscribeLeaderboard() {
           .toUpperCase();
         const challenges = data.challengesCompleted ?? data.wins ?? 0;
         const isSelf = auth.currentUser && auth.currentUser.uid === docSnap.id;
+
+        // Use photoURL if available, otherwise show initials
+        const avatarContent = data.photoURL
+          ? `<img src="${data.photoURL}" alt="${
+              data.displayName || "User"
+            }" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />`
+          : initials;
+
         li.innerHTML = `
           <span class="rank">${i + 1}</span>
           <div class="user-info ${isSelf ? "self" : ""}">
-            <div class="avatar">${initials}</div>
+            <div class="avatar">${avatarContent}</div>
             <div>
               <h3>${data.displayName || "Unknown"}${
           isSelf ? " <span style='color:#ffcb05'>(You)</span>" : ""
@@ -65,4 +73,22 @@ function subscribeLeaderboard() {
   );
 }
 
-document.addEventListener("DOMContentLoaded", subscribeLeaderboard);
+// Update the date
+function updateChallengeDate() {
+  const dateElement = document.getElementById("challenge-date");
+  if (dateElement) {
+    const today = new Date();
+    const formattedDate = today.toLocaleDateString("en-US", {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
+    dateElement.textContent = formattedDate;
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  subscribeLeaderboard();
+  updateChallengeDate();
+});

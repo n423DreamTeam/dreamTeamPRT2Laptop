@@ -1,5 +1,5 @@
 import { getAuth } from "firebase/auth";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 import { app, db } from "../../firebase.js";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -49,27 +49,62 @@ document.addEventListener("DOMContentLoaded", () => {
   let goalPoints = 0;
   let goalAssists = 0;
 
-  // === User progression (points & wins) persisted in localStorage ===
-  const PROGRESS_KEY = "dt_user_progress_v1";
+  // === User progression (points & wins) persisted in Firestore per user ===
   let userProgress = { points: 0, wins: 0 };
+  const auth = getAuth(app);
 
-  function loadProgress() {
+  // Load user progress from Firestore (user-specific)
+  async function loadProgress() {
     try {
-      const raw = localStorage.getItem(PROGRESS_KEY);
-      if (raw) userProgress = JSON.parse(raw);
+      const user = auth.currentUser;
+      if (user) {
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (userDoc.exists()) {
+          const data = userDoc.data();
+          userProgress.points = data.points || 0;
+          userProgress.wins = data.wins || 0;
+          console.log("Loaded user progress from Firestore:", userProgress);
+        } else {
+          console.log("No existing user data, starting fresh");
+        }
+      } else {
+        console.warn("No user logged in, progress will not be saved");
+      }
     } catch (e) {
-      console.warn("Could not load user progress:", e);
+      console.warn("Could not load user progress from Firestore:", e);
+    }
+    renderUserPointsHud();
+  }
+
+  // Save user progress to Firestore (user-specific)
+  async function saveProgress() {
+    try {
+      const user = auth.currentUser;
+      if (user) {
+        const displayName =
+          user.displayName ||
+          (user.email ? user.email.split("@")[0] : "Player");
+        await setDoc(
+          doc(db, "users", user.uid),
+          {
+            displayName,
+            points: userProgress.points,
+            wins: userProgress.wins,
+            challengesCompleted: userProgress.wins,
+            updatedAt: serverTimestamp(),
+          },
+          { merge: true }
+        );
+        console.log("Saved user progress to Firestore:", userProgress);
+      } else {
+        console.warn("No user logged in, cannot save progress");
+      }
+    } catch (e) {
+      console.warn("Could not save user progress to Firestore:", e);
     }
   }
 
-  function saveProgress() {
-    try {
-      localStorage.setItem(PROGRESS_KEY, JSON.stringify(userProgress));
-    } catch (e) {
-      console.warn("Could not save user progress:", e);
-    }
-  }
-
+  // Load progress when page loads (async)
   loadProgress();
 
   // Small UI hook to show user's points
@@ -234,35 +269,16 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function showChallengeComplete() {
+    const oldPoints = userProgress.points;
     // Award user points and record a win
     const reward = Math.max(25, Math.round(goalPoints * 0.2)); // minimum reward
     userProgress.points += reward;
     userProgress.wins += 1;
-    saveProgress();
-    renderUserPointsHud();
 
-    // Firestore sync (best-effort, non-blocking)
-    try {
-      const auth = getAuth(app);
-      const u = auth.currentUser;
-      if (u) {
-        const displayName =
-          u.displayName || (u.email ? u.email.split("@")[0] : "Player");
-        setDoc(
-          doc(db, "users", u.uid),
-          {
-            displayName,
-            points: userProgress.points,
-            wins: userProgress.wins,
-            challengesCompleted: userProgress.wins,
-            updatedAt: serverTimestamp(),
-          },
-          { merge: true }
-        ).catch((err) => console.warn("Firestore sync failed", err));
-      }
-    } catch (err) {
-      console.warn("Firestore sync skipped:", err);
-    }
+    // Save to Firestore
+    saveProgress().then(() => {
+      renderUserPointsHud();
+    });
 
     // Create modal overlay and popup
     const modal = document.createElement("div");
@@ -321,6 +337,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Re-render players so any newly-unlocked players appear
     displayPlayers(playersData);
+
+    // Notify user about newly unlocked players
+    try {
+      const unlockedNow = playersData
+        .filter(
+          (p) =>
+            p.requiredPoints &&
+            oldPoints < p.requiredPoints &&
+            userProgress.points >= p.requiredPoints
+        )
+        .map((p) => p.name);
+      if (unlockedNow.length) {
+        const toast = document.createElement("div");
+        toast.style.cssText = `
+          position: fixed; right: 20px; bottom: 20px; z-index: 10000;
+          background: rgba(255, 203, 5, 0.95); color: #111; border: 2px solid #ffcb05;
+          border-radius: 12px; padding: 0.9rem 1rem; box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+          max-width: 380px; font-weight: 700;
+        `;
+        toast.innerHTML = `🔓 Players unlocked: ${unlockedNow
+          .map((n) => n.toUpperCase())
+          .join(", ")}`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 4000);
+      }
+    } catch (_) {}
   }
 
   function createLineupTag(name) {
