@@ -6,6 +6,7 @@ import {
   updateEmail,
   EmailAuthProvider,
   reauthenticateWithCredential,
+  signOut,
 } from "firebase/auth";
 import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -50,6 +51,23 @@ async function compressImage(file, maxWidth = 1024, quality = 0.8) {
   });
 }
 
+function initLogout() {
+  const logoutBtn = document.getElementById("logout-btn");
+  if (!logoutBtn) return;
+  logoutBtn.addEventListener("click", async () => {
+    try {
+      const confirmed = window.confirm("Log out now?");
+      if (!confirmed) return;
+      await signOut(auth);
+      localStorage.removeItem("dt_username");
+      window.location.href = "./login.html";
+    } catch (e) {
+      console.error("Logout failed:", e);
+      showToast("Logout failed. Please try again.", "error");
+    }
+  });
+}
+
 // Simple toast helper (global within this module)
 function showToast(message, type = "info", ms = 3500) {
   const root = document.getElementById("toast-root");
@@ -79,6 +97,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (user) {
       loadAccountData(user);
       initProfileControls(user);
+      initLogout();
     } else {
       window.location.href = "./login.html";
     }
