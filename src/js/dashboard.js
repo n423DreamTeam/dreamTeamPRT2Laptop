@@ -3,6 +3,33 @@ import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { app, db } from "../../firebase.js";
 
 document.addEventListener("DOMContentLoaded", () => {
+  // === Hamburger menu toggle ===
+  const hamburger = document.querySelector(".hamburger");
+  const nav = document.querySelector(".navbar nav");
+
+  if (hamburger && nav) {
+    hamburger.addEventListener("click", () => {
+      hamburger.classList.toggle("active");
+      nav.classList.toggle("active");
+    });
+
+    // Close menu when clicking a link
+    nav.querySelectorAll("a").forEach((link) => {
+      link.addEventListener("click", () => {
+        hamburger.classList.remove("active");
+        nav.classList.remove("active");
+      });
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener("click", (e) => {
+      if (!hamburger.contains(e.target) && !nav.contains(e.target)) {
+        hamburger.classList.remove("active");
+        nav.classList.remove("active");
+      }
+    });
+  }
+
   // === grab elements once ===
   const dropZone = document.getElementById("drop-zone");
   const playersContainer = document.querySelector(".players");
