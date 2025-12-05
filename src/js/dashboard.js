@@ -1,35 +1,14 @@
-import { getAuth } from "firebase/auth";
-import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
-import { app, db } from "../../firebase.js";
+import { onAuthStateChanged } from "firebase/auth";
+import {
+  doc,
+  getDoc,
+  setDoc,
+  increment,
+  serverTimestamp,
+} from "firebase/firestore";
+import { auth, db } from "../../firebase.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-  // === Hamburger menu toggle ===
-  const hamburger = document.querySelector(".hamburger");
-  const nav = document.querySelector(".navbar nav");
-
-  if (hamburger && nav) {
-    hamburger.addEventListener("click", () => {
-      hamburger.classList.toggle("active");
-      nav.classList.toggle("active");
-    });
-
-    // Close menu when clicking a link
-    nav.querySelectorAll("a").forEach((link) => {
-      link.addEventListener("click", () => {
-        hamburger.classList.remove("active");
-        nav.classList.remove("active");
-      });
-    });
-
-    // Close menu when clicking outside
-    document.addEventListener("click", (e) => {
-      if (!hamburger.contains(e.target) && !nav.contains(e.target)) {
-        hamburger.classList.remove("active");
-        nav.classList.remove("active");
-      }
-    });
-  }
-
   // === grab elements once ===
   const dropZone = document.getElementById("drop-zone");
   const playersContainer = document.querySelector(".players");
@@ -45,67 +24,74 @@ document.addEventListener("DOMContentLoaded", () => {
   let playersData = [];
   let lineup = [];
 
-  // Dynamic goals (will be computed from real stats)
-  let goalPoints = 0;
-  let goalAssists = 0;
+  let goalPoints = 150;
+  let goalAssists = 50;
 
-  // === User progression (points & wins) persisted in Firestore per user ===
+  // === User progression (points & wins) persisted in localStorage ===
+  const PROGRESS_KEY = "dt_user_progress_v1";
   let userProgress = { points: 0, wins: 0 };
-  const auth = getAuth(app);
+  let firebaseUser = null;
+  let challengeCompleted = false;
 
-  // Load user progress from Firestore (user-specific)
-  async function loadProgress() {
+  function loadProgress() {
     try {
-      const user = auth.currentUser;
-      if (user) {
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        if (userDoc.exists()) {
-          const data = userDoc.data();
-          userProgress.points = data.points || 0;
-          userProgress.wins = data.wins || 0;
-          console.log("Loaded user progress from Firestore:", userProgress);
-        } else {
-          console.log("No existing user data, starting fresh");
-        }
-      } else {
-        console.warn("No user logged in, progress will not be saved");
-      }
+      const raw = localStorage.getItem(PROGRESS_KEY);
+      if (raw) userProgress = JSON.parse(raw);
     } catch (e) {
-      console.warn("Could not load user progress from Firestore:", e);
-    }
-    renderUserPointsHud();
-  }
-
-  // Save user progress to Firestore (user-specific)
-  async function saveProgress() {
-    try {
-      const user = auth.currentUser;
-      if (user) {
-        const displayName =
-          user.displayName ||
-          (user.email ? user.email.split("@")[0] : "Player");
-        await setDoc(
-          doc(db, "users", user.uid),
-          {
-            displayName,
-            points: userProgress.points,
-            wins: userProgress.wins,
-            challengesCompleted: userProgress.wins,
-            updatedAt: serverTimestamp(),
-          },
-          { merge: true }
-        );
-        console.log("Saved user progress to Firestore:", userProgress);
-      } else {
-        console.warn("No user logged in, cannot save progress");
-      }
-    } catch (e) {
-      console.warn("Could not save user progress to Firestore:", e);
+      console.warn("Could not load user progress:", e);
     }
   }
 
-  // Load progress when page loads (async)
+  function saveProgress() {
+    try {
+      localStorage.setItem(PROGRESS_KEY, JSON.stringify(userProgress));
+    } catch (e) {
+      console.warn("Could not save user progress:", e);
+    }
+  }
+
   loadProgress();
+
+  async function hydrateProgressFromFirestore(user) {
+    if (!db || !user) return;
+    try {
+      const snap = await getDoc(doc(db, "users", user.uid));
+      if (snap.exists()) {
+        const data = snap.data();
+        userProgress.points = data.points ?? userProgress.points;
+        userProgress.wins =
+          data.challengesCompleted ?? data.wins ?? userProgress.wins;
+        saveProgress();
+        renderUserPointsHud();
+      }
+    } catch (e) {
+      console.warn("Could not hydrate progress from Firestore", e);
+    }
+  }
+
+  async function syncProgressToFirestore({
+    pointsDelta,
+    winIncrement,
+    perfectChallengeAchieved,
+  }) {
+    if (!db || !firebaseUser) return;
+    try {
+      const payload = {
+        points: increment(pointsDelta),
+        wins: increment(winIncrement),
+        challengesCompleted: increment(winIncrement),
+        lastPlayedAt: serverTimestamp(),
+      };
+      if (perfectChallengeAchieved) {
+        payload.perfectChallenges = increment(1);
+      }
+      await setDoc(doc(db, "users", firebaseUser.uid), payload, {
+        merge: true,
+      });
+    } catch (e) {
+      console.warn("Could not sync progress to Firestore", e);
+    }
+  }
 
   // Small UI hook to show user's points
   function renderUserPointsHud() {
@@ -122,8 +108,57 @@ document.addEventListener("DOMContentLoaded", () => {
 
   renderUserPointsHud();
 
-  // Placeholder for challenge (filled after stats load)
-  let dailyChallenge = { desc: "Loading real Pacers stats..." };
+  // Keep local progress in sync with authenticated user data
+  onAuthStateChanged(auth, (user) => {
+    firebaseUser = user;
+    if (user) {
+      hydrateProgressFromFirestore(user);
+    }
+  });
+
+  // === Generate randomized but realistic daily challenge ===
+  function generateDailyChallenge() {
+    // Get day of year to ensure same challenge all day
+    const now = new Date();
+    const start = new Date(now.getFullYear(), 0, 0);
+    const diff = now - start;
+    const oneDay = 1000 * 60 * 60 * 24;
+    const dayOfYear = Math.floor(diff / oneDay);
+
+    // Use day of year as seed for consistency
+    const seed = dayOfYear % 10;
+
+    // Challenge presets (60 points, 25 assists each)
+    const challenges = [
+      {
+        points: 60,
+        assists: 15,
+        desc: "Build a balanced team with moderate scoring",
+      },
+      {
+        points: 70,
+        assists: 15,
+        desc: "Create a high-assist lineup for ball movement",
+      },
+      { points: 80, assists: 30, desc: "Focus on playmaking over scoring" },
+      { points: 20, assists: 10, desc: "Go for a scoring-focused roster" },
+      { points: 20, assists: 10, desc: "Achieve perfect balance" },
+      { points: 20, assists: 10, desc: "Team up the assist leaders" },
+      { points: 20, assists: 10, desc: "Go big with scoring power" },
+      { points: 20, assists: 10, desc: "Ultimate passing challenge" },
+      { points: 20, assists: 10, desc: "Create a defensive-minded lineup" },
+      { points: 20, assists: 10, desc: "Build a well-rounded squad" },
+    ];
+
+    const challenge = challenges[seed];
+    goalPoints = challenge.points;
+    goalAssists = challenge.assists;
+
+    return challenge;
+  }
+
+  // === Initialize daily challenge ===
+  const dailyChallenge = generateDailyChallenge();
 
   // === Update challenge objective in DOM ===
   function updateChallengeDisplay() {
@@ -149,63 +184,79 @@ document.addEventListener("DOMContentLoaded", () => {
     assistsVal = document.querySelector("#assists-val");
   }
 
-  // Defer initial display until we compute dynamic goals
   updateChallengeDisplay();
 
-  // Accept a boolean flag; default false
-  async function fetchDailyChallenge(refresh = false) {
-    playersContainer.innerHTML = refresh
-      ? '<p style="color:#ffcb05">Refreshing challenge...</p>'
-      : '<p style="color:#ffcb05">Loading daily challenge...</p>';
+  // === Fetch Pacers players from backend API ===
+  async function fetchPacersPlayers() {
+    const cacheKey = "pacersPlayers_2024";
+
     try {
-      const url = refresh ? `${API_URL}/daily?refresh=1` : `${API_URL}/daily`;
-      const res = await fetch(url);
-      if (res.status === 429) {
-        // Client-side backoff (should rarely happen now that server falls back)
-        playersContainer.innerHTML = `<p style="color:yellow">Rate limited. Retrying in 5s...</p>`;
-        refreshBtn.disabled = true;
-        setTimeout(() => {
-          refreshBtn.disabled = false;
-          fetchDailyChallenge(refresh);
-        }, 5000);
+      // Fetch players from Pacers team
+      const playersRes = await fetch(`${API_URL}/players?team_id=12`);
+
+      // Handle rate limit from proxy/server
+      if (playersRes.status === 429) {
+        console.warn("⚠️ Server returned 429 Too Many Requests");
+        playersContainer.innerHTML = `<p style="color:yellow">⚠️ Server is being rate-limited. Please wait a few seconds and try again.</p>`;
+        // Disable refresh button briefly to prevent spamming
+        if (refreshBtn) {
+          refreshBtn.disabled = true;
+          setTimeout(() => (refreshBtn.disabled = false), 20000); // 20s
+        }
         return;
       }
-      if (!res.ok) throw new Error(`Daily fetch failed: ${res.status}`);
-      const json = await res.json();
-      goalPoints = json.goals.points;
-      goalAssists = json.goals.assists;
-      playersData = json.players.map((p) => ({
-        id: p.id,
-        name: p.name,
-        pts: parseFloat(p.pts.toFixed(1)),
-        ast: parseFloat(p.ast.toFixed(1)),
-        // Progressive locking thresholds: better scorers unlock later
-        requiredPoints:
-          p.pts >= 20 ? 250 : p.pts >= 16 ? 180 : p.pts >= 12 ? 120 : 0,
-      }));
-      let descBase = json.fallback
-        ? `Fallback stats active — reach ${goalPoints} pts & ${goalAssists} ast.`
-        : `Reach ${goalPoints} pts & ${goalAssists} ast (season averages).`;
-      if (json.goalsLocked && json.refreshed) {
-        descBase += ` Players refreshed — goals unchanged.`;
-      } else if (json.refreshed) {
-        descBase += ` (New goals recalculated.)`;
-      }
-      if (json.rateLimited) {
-        descBase += " (Upstream rate limit – using fallback stats.)";
-      }
-      dailyChallenge = { desc: descBase };
-      updateChallengeDisplay();
+
+      if (!playersRes.ok)
+        throw new Error(`Failed to fetch players: ${playersRes.status}`);
+      const playersData_raw = await playersRes.json();
+      const allPacers = playersData_raw.data;
+
+      console.log(`🟣 Found ${allPacers.length} Pacers players.`);
+
+      // For now, use estimated stats based on player position (free API tier limitation)
+      const withStats = allPacers
+        .map((p) => {
+          // Generate realistic stats based on position
+          let pts, ast;
+          if (p.position === "G") {
+            pts = 10 + Math.random() * 15;
+            ast = 4 + Math.random() * 4;
+          } else if (p.position === "F") {
+            pts = 12 + Math.random() * 15;
+            ast = 2 + Math.random() * 3;
+          } else if (p.position === "C") {
+            pts = 10 + Math.random() * 14;
+            ast = 1 + Math.random() * 2;
+          } else {
+            pts = 8 + Math.random() * 12;
+            ast = 2 + Math.random() * 3;
+          }
+
+          return {
+            id: p.id,
+            name: `${p.first_name} ${p.last_name}`,
+            pts: parseFloat(pts.toFixed(1)),
+            ast: parseFloat(ast.toFixed(1)),
+            // Determine unlock requirement dynamically based on generated scoring
+            // Higher-scoring players require more user points to unlock
+            requiredPoints:
+              pts >= 18 ? 200 : pts >= 16 ? 150 : pts >= 14 ? 120 : 0,
+          };
+        })
+        .filter((p) => p.pts > 0);
+
+      // Shuffle and get only 5 random players
+      const shuffled = withStats.sort(() => Math.random() - 0.5);
+      const selectedPlayers = shuffled.slice(0, 5);
+
+      playersData = selectedPlayers;
+      console.log(`✅ Loaded 5 random players`);
       displayPlayers(playersData);
-    } catch (e) {
-      console.error("Daily challenge error", e);
-      playersContainer.innerHTML = `<p style="color:red">Failed to load daily challenge. <button id='retry-daily' style='color:#fff;background:#3f4dd3;border:1px solid #ffcb05;padding:2px 6px;border-radius:6px;'>Retry</button></p>`;
-      const retry = document.getElementById("retry-daily");
-      if (retry) retry.addEventListener("click", () => fetchDailyChallenge());
+    } catch (err) {
+      console.error("❌ Error fetching Pacers players:", err);
+      playersContainer.innerHTML = `<p style="color:red">❌ Error loading players. Check console for details.</p>`;
     }
   }
-
-  // Server now handles fallback; old synthetic function removed
 
   // === Display players ===
   function displayPlayers(players) {
@@ -213,7 +264,7 @@ document.addEventListener("DOMContentLoaded", () => {
       playersContainer.innerHTML = `<p style="color:yellow">No Pacers found.</p>`;
       return;
     }
-    // Show all available players
+    // Build HTML with lock state
     playersContainer.innerHTML = players
       .map((p) => {
         const locked =
@@ -221,7 +272,9 @@ document.addEventListener("DOMContentLoaded", () => {
         return `
           <div class="player ${locked ? "locked" : ""}" data-name="${
           p.name
-        }" data-req="${p.requiredPoints}" ${locked ? "" : 'draggable="true"'}>
+        }" data-req="${p.requiredPoints || 0}" ${
+          locked ? "" : 'draggable="true"'
+        }>
             ${p.name.toUpperCase()}
             ${
               locked
@@ -231,6 +284,8 @@ document.addEventListener("DOMContentLoaded", () => {
           </div>`;
       })
       .join("");
+
+    // Attach listeners but skip locked players
     playersContainer.querySelectorAll(".player").forEach((playerEl) => {
       const isLocked = playerEl.classList.contains("locked");
       const name = playerEl.getAttribute("data-name");
@@ -239,6 +294,7 @@ document.addEventListener("DOMContentLoaded", () => {
           e.dataTransfer.setData("text/plain", name.toUpperCase());
         });
       } else {
+        // show a tooltip on click explaining unlock requirement
         playerEl.addEventListener("click", () => {
           const req = playerEl.getAttribute("data-req") || 0;
           alert(
@@ -249,8 +305,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Initialize via daily endpoint
-  fetchDailyChallenge(); // Initial call without refresh
+  // === Initialize ===
+  fetchPacersPlayers();
 
   // === Drag & Drop logic ===
   function updateBars() {
@@ -265,19 +321,28 @@ document.addEventListener("DOMContentLoaded", () => {
     pointsVal.textContent = totalPoints.toFixed(1);
     assistsVal.textContent = totalAssists.toFixed(1);
 
-    if (pointsPct === 100 && assistsPct === 100) showChallengeComplete();
+    if (!challengeCompleted && pointsPct === 100 && assistsPct === 100) {
+      challengeCompleted = true;
+      showChallengeComplete(totalPoints, totalAssists);
+    }
   }
 
-  function showChallengeComplete() {
-    const oldPoints = userProgress.points;
+  function showChallengeComplete(totalPoints, totalAssists) {
     // Award user points and record a win
     const reward = Math.max(25, Math.round(goalPoints * 0.2)); // minimum reward
     userProgress.points += reward;
     userProgress.wins += 1;
+    saveProgress();
+    renderUserPointsHud();
 
-    // Save to Firestore
-    saveProgress().then(() => {
-      renderUserPointsHud();
+    const perfectChallengeAchieved =
+      totalPoints >= goalPoints * 1.5 && totalAssists >= goalAssists * 1.5;
+
+    // Persist to Firestore when signed in
+    syncProgressToFirestore({
+      pointsDelta: reward,
+      winIncrement: 1,
+      perfectChallengeAchieved,
     });
 
     // Create modal overlay and popup
@@ -325,9 +390,10 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("play-again-btn").addEventListener("click", () => {
       modal.remove();
       lineup = [];
+      challengeCompleted = false;
       dropZone.innerHTML = `<p><strong>BUILD YOUR DREAMTEAM</strong><br>Drag & Drop players into this area</p>`;
       updateBars();
-      fetchDailyChallenge(true); // Call with refresh flag
+      fetchPacersPlayers();
     });
 
     // Done: just close the popup
@@ -337,32 +403,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Re-render players so any newly-unlocked players appear
     displayPlayers(playersData);
-
-    // Notify user about newly unlocked players
-    try {
-      const unlockedNow = playersData
-        .filter(
-          (p) =>
-            p.requiredPoints &&
-            oldPoints < p.requiredPoints &&
-            userProgress.points >= p.requiredPoints
-        )
-        .map((p) => p.name);
-      if (unlockedNow.length) {
-        const toast = document.createElement("div");
-        toast.style.cssText = `
-          position: fixed; right: 20px; bottom: 20px; z-index: 10000;
-          background: rgba(255, 203, 5, 0.95); color: #111; border: 2px solid #ffcb05;
-          border-radius: 12px; padding: 0.9rem 1rem; box-shadow: 0 8px 24px rgba(0,0,0,0.35);
-          max-width: 380px; font-weight: 700;
-        `;
-        toast.innerHTML = `🔓 Players unlocked: ${unlockedNow
-          .map((n) => n.toUpperCase())
-          .join(", ")}`;
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 4000);
-      }
-    } catch (_) {}
   }
 
   function createLineupTag(name) {
@@ -413,6 +453,7 @@ document.addEventListener("DOMContentLoaded", () => {
       clearBtn.addEventListener("click", () => {
         // Clear the lineup
         lineup = [];
+        challengeCompleted = false;
         dropZone.innerHTML = `<p><strong>BUILD YOUR DREAMTEAM</strong><br>Drag & Drop players into this area</p>`;
         document
           .querySelector(".feedback")
@@ -450,36 +491,41 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   refreshBtn.addEventListener("click", () => {
-    fetchDailyChallenge(true); // Call with refresh flag on button click
+    // Fetch new roster of 5 players ONLY (don't clear lineup)
+    fetchPacersPlayers();
   });
   const slider = document.querySelector(".slider");
-  const quantity = slider
-    ? parseInt(getComputedStyle(slider).getPropertyValue("--quantity"))
-    : 0;
+  const quantity = parseInt(
+    getComputedStyle(slider).getPropertyValue("--quantity")
+  );
   let angle = 0;
   let current = 0;
-  // Enable continuous CSS auto-spin
-  const CSS_AUTO_CLASS = "css-auto-spin";
-  if (slider && !slider.classList.contains(CSS_AUTO_CLASS)) {
-    slider.classList.add(CSS_AUTO_CLASS);
-  }
 
-  // Prevent JS from clobbering transform if CSS auto-spin is active
   function rotateCarousel(direction) {
-    if (!slider || !quantity) return;
-    if (slider.classList.contains(CSS_AUTO_CLASS)) return;
     current = (current + direction + quantity) % quantity;
     angle = (360 / quantity) * current;
     slider.style.transform = `perspective(1000px) rotateY(-${angle}deg)`;
   }
-
-  // Arrow buttons (if present)
+  // Automatic rotation for the carousel (floating banner is preferred)
   const banner =
     document.querySelector(".banner.floating") ||
     document.querySelector(".banner");
   const leftBtn = document.querySelector(".nav2.left2");
   const rightBtn = document.querySelector(".nav2.right2");
 
+  let autoTimer = null;
+  function startAutoRotate(interval = 3500) {
+    stopAutoRotate();
+    autoTimer = setInterval(() => rotateCarousel(1), interval);
+  }
+  function stopAutoRotate() {
+    if (autoTimer) {
+      clearInterval(autoTimer);
+      autoTimer = null;
+    }
+  }
+
+  // Arrow buttons (if present)
   if (leftBtn)
     leftBtn.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -491,28 +537,23 @@ document.addEventListener("DOMContentLoaded", () => {
       rotateCarousel(1);
     });
 
-  // Re-apply CSS auto-spin if URL hash changes (navigation to anchors)
-  window.addEventListener("hashchange", () => {
-    if (slider && !slider.classList.contains(CSS_AUTO_CLASS)) {
-      slider.classList.add(CSS_AUTO_CLASS);
-    }
-  });
+  // Pause auto-rotation while hovering the banner
+  if (banner) {
+    banner.addEventListener("mouseenter", stopAutoRotate);
+    banner.addEventListener("mouseleave", () => startAutoRotate(3500));
+  }
 
-  // If the document becomes visible again, re-enable the CSS spin (some browsers throttle)
-  document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible" && slider) {
-      slider.classList.add(CSS_AUTO_CLASS);
-    }
-  });
+  // Start auto-rotation
+  startAutoRotate(3500);
 });
 const dateElement = document.getElementById("challenge-date");
 if (dateElement) {
   const today = new Date();
   const formattedDate = today.toLocaleDateString("en-US", {
-    weekday: "long", // e.g. "Tuesday"
-    month: "long", // e.g. "April"
-    day: "numeric", // e.g. "2"
-    year: "numeric", // e.g. "2025"
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
   });
   dateElement.textContent = formattedDate;
 }

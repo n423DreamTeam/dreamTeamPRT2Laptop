@@ -4,6 +4,8 @@ import { app, db } from "../../firebase.js";
 
 const auth = getAuth(app);
 
+const PROGRESS_KEY = "dt_user_progress_v1";
+
 // Badge thresholds
 const BADGE_THRESHOLDS = {
   firstWin: 1,
@@ -12,15 +14,27 @@ const BADGE_THRESHOLDS = {
   statMaster: 10,
 };
 
+function getLocalProgress() {
+  try {
+    const raw = localStorage.getItem(PROGRESS_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {
+    console.warn("Could not read local progress", e);
+  }
+  return { points: 0, wins: 0 };
+}
+
 async function loadUserStats(user) {
   try {
     const userDoc = await getDoc(doc(db, "users", user.uid));
 
     if (userDoc.exists()) {
       const data = userDoc.data();
-      const points = data.points || 0;
-      const wins = data.wins || 0;
-      const challengesCompleted = data.challengesCompleted || wins || 0;
+      const localProgress = getLocalProgress();
+      const points = Math.max(data.points || 0, localProgress.points || 0);
+      const wins = Math.max(data.wins || 0, localProgress.wins || 0);
+      const challengesCompleted =
+        data.challengesCompleted || wins || localProgress.wins || 0;
 
       // Update points display
       const pointsElement = document.getElementById("user-points");
@@ -31,20 +45,20 @@ async function loadUserStats(user) {
       // Update badges based on actual stats
       updateBadges(challengesCompleted, data);
     } else {
-      // No user data yet - show zeros
+      // No Firestore data yet - fall back to local progress
+      const localProgress = getLocalProgress();
       const pointsElement = document.getElementById("user-points");
       if (pointsElement) {
-        pointsElement.textContent = "0";
+        pointsElement.textContent = localProgress.points || 0;
       }
-      updateBadges(0, {});
+      updateBadges(localProgress.wins || 0, {});
     }
   } catch (error) {
     console.error("Error loading user stats:", error);
-    // Show error state
+    const localProgress = getLocalProgress();
     const pointsElement = document.getElementById("user-points");
-    if (pointsElement) {
-      pointsElement.textContent = "0";
-    }
+    if (pointsElement) pointsElement.textContent = localProgress.points || 0;
+    updateBadges(localProgress.wins || 0, {});
   }
 }
 

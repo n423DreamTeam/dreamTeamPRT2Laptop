@@ -22,7 +22,7 @@ const players = [
     draft: "2020: 1st Rd. 12th",
     experience: "3 years",
     achievements: ["NBA All-Star [2024]", "NBA All-Rookie First Team [2021]"],
-    logo: "images/reggieandsiakam.png",
+    logo: "images/pacerslogo.png",
   },
   {
     id: "pascal-siakam",
@@ -73,7 +73,7 @@ const players = [
       "NBA All-Rookie Second Team [2023]",
       "WCC Sixth Man of the Year",
     ],
-    logo: "images/reggieandsiakam.png",
+    logo: "images/pacerslogo.png",
   },
   {
     id: "aaron-nesmith",
@@ -97,7 +97,7 @@ const players = [
     draft: "2020: 1st Rd. 14th",
     experience: "4 years",
     achievements: ["SEC Freshman of the Year [2019]"],
-    logo: "images/reggieandsiakam.png",
+    logo: "images/pacerslogo.png",
   },
   {
     id: "benedict-mathurin",
@@ -124,7 +124,7 @@ const players = [
       "NBA All-Rookie Second Team [2023]",
       "Pac-12 Player of the Year [2022]",
     ],
-    logo: "images/reggieandsiakam.png",
+    logo: "images/pacerslogo.png",
   },
   {
     id: "tj-mcconnell",
@@ -148,7 +148,7 @@ const players = [
     draft: "Undrafted",
     experience: "10 years",
     achievements: ["NBA Hustle Award [2021]"],
-    logo: "images/reggieandsiakam.png",
+    logo: "images/pacerslogo.png",
   },
   {
     id: "jay-huff",
@@ -173,7 +173,7 @@ const players = [
     draft: "Undrafted",
     experience: "4 years",
     achievements: ["ACC Defensive Player of the Year [2021]"],
-    logo: "images/reggieandsiakam.png",
+    logo: "images/pacerslogo.png",
   },
   {
     id: "obi-toppin",
@@ -197,7 +197,7 @@ const players = [
     draft: "2020: 1st Rd. 8th",
     experience: "4 years",
     achievements: ["Naismith College Player of the Year [2020]"],
-    logo: "images/reggieandsiakam.png",
+    logo: "images/pacerslogo.png",
   },
   {
     id: "ben-sheppard",
@@ -221,7 +221,7 @@ const players = [
     draft: "2023: 2nd Rd. 26th",
     experience: "1 year",
     achievements: ["Ohio Valley Conference Player of the Year [2023]"],
-    logo: "images/reggieandsiakam.png",
+    logo: "images/pacerslogo.png",
   },
   {
     id: "jarace-walker",
@@ -245,7 +245,7 @@ const players = [
     draft: "2023: 1st Rd. 8th",
     experience: "1 year",
     achievements: ["AAC All-Rookie Team [2023]"],
-    logo: "images/reggieandsiakam.png",
+    logo: "images/pacerslogo.png",
   },
   {
     id: "isaiah-jackson",
@@ -270,7 +270,7 @@ const players = [
     draft: "2021: 1st Rd. 22nd",
     experience: "4 years",
     achievements: ["SEC All-Freshman Team [2021]"],
-    logo: "images/reggieandsiakam.png",
+    logo: "images/pacerslogo.png",
   },
   {
     id: "johnny-furphy",
@@ -294,7 +294,7 @@ const players = [
     draft: "2024: 2nd Rd. 35th",
     experience: "Rookie",
     achievements: ["Big 12 All-Freshman Team [2024]"],
-    logo: "images/reggieandsiakam.png",
+    logo: "images/pacerslogo.png",
   },
   {
     id: "taelon-peter",
@@ -318,7 +318,7 @@ const players = [
     draft: "Undrafted",
     experience: "Rookie",
     achievements: ["Southern Conference Player of the Year [2024]"],
-    logo: "images/reggieandsiakam.png",
+    logo: "images/pacerslogo.png",
   },
   {
     id: "kam-jones",
@@ -342,7 +342,7 @@ const players = [
     draft: "2024: 2nd Rd. 49th",
     experience: "Rookie",
     achievements: ["Big East Player of the Year [2024]"],
-    logo: "images/reggieandsiakam.png",
+    logo: "images/pacerslogo.png",
   },
   {
     id: "tony-bradley",
@@ -367,7 +367,7 @@ const players = [
     draft: "2017: 1st Rd. 28th",
     experience: "7 years",
     achievements: ["NCAA Champion [2017]"],
-    logo: "images/reggieandsiakam.png",
+    logo: "images/pacerslogo.png",
   },
   {
     id: "jeremiah-robinson-earl",
@@ -391,7 +391,7 @@ const players = [
     draft: "2021: 2nd Rd. 32nd",
     experience: "4 years",
     achievements: ["NCAA Champion [2018]"],
-    logo: "images/reggieandsiakam.png",
+    logo: "images/pacerslogo.png",
   },
   {
     id: "quenton-jackson",
@@ -415,7 +415,7 @@ const players = [
     draft: "Undrafted",
     experience: "3 years",
     achievements: ["SEC Sixth Man of the Year [2022]"],
-    logo: "images/reggieandsiakam.png",
+    logo: "images/pacerslogo.png",
   },
   {
     id: "ethan-thompson",
@@ -439,7 +439,7 @@ const players = [
     draft: "Undrafted",
     experience: "Rookie",
     achievements: ["All-Pac-12 First Team [2021]"],
-    logo: "images/reggieandsiakam.png",
+    logo: "images/pacerslogo.png",
   },
 ];
 
@@ -458,12 +458,11 @@ function renderPlayers(filter = "all", search = "", page = 1) {
   let filtered = players.filter((p) => {
     const matchesFilter =
       filter === "all" ||
-      p.position.toLowerCase().includes(filter.replace("s", "")); // "guards" -> "guard"
+      p.position.toLowerCase().includes(filter.replace("s", ""));
     const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase());
     return matchesFilter && matchesSearch;
   });
 
-  // Pagination
   const startIndex = (page - 1) * playersPerPage;
   const endIndex = startIndex + playersPerPage;
   const paginatedPlayers = filtered.slice(startIndex, endIndex);

@@ -1,12 +1,14 @@
 @use "variables" as *;
 @use "mixins" as *;
+
+.players-body {
+  /* Set a single background source so swapping images only requires one change */
+  --players-bg: url(../images/background.jpeg);
+}
+
 .players-main {
-  background: url(../images/background.jpeg);
-  background-position: top;
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-  position: absolute;
+  background: var(--players-bg) center/cover no-repeat fixed;
+  background-color: #002d62;
   min-height: 100vh;
   padding: 0rem 4rem 4rem 4rem;
   color: #fff;
@@ -31,6 +33,7 @@
   justify-content: space-between;
   gap: 1.5rem;
   margin-bottom: 3rem;
+
   input {
     padding: 0.75rem 1.25rem;
     border-radius: 25px;
@@ -59,28 +62,6 @@
       background: #0a0f28;
       color: #fff;
     }
-  }
-}
-.players-main {
-  background: url(../images/background.jpeg);
-  background-position: center;
-  background-repeat: no-repeat;
-  background-color: #002d62;
-  min-height: 100vh;
-  padding: 0rem 4rem 4rem 4rem;
-  color: #fff;
-  font-family: basketball;
-  position: relative;
-  z-index: 0;
-
-  h1 {
-    font-size: 3.5rem;
-    font-weight: 900;
-    letter-spacing: 0.02em;
-    padding-top: 5rem;
-    margin-bottom: 2.5rem;
-    text-transform: uppercase;
-    font-family: basketball;
   }
 }
 

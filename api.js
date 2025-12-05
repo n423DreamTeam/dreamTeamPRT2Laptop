@@ -4,9 +4,11 @@ import url from "url";
 
 const PORT = 3001;
 
-const API_KEY =
+// Ball Don't Lie API
+const BDL_API_KEY =
   process.env.BDL_API_KEY || "829461bf-d03d-43cd-840f-8d44e3f2a8bb";
-const BASE_API = "https://api.balldontlie.io/v1";
+const BDL_BASE_API = "https://api.balldontlie.io/v1";
+const PACERS_TEAM_ID = 12; // Ball Don't Lie team ID for Pacers
 
 function makeRequest(apiUrl, options = {}, retries = 3) {
   return new Promise((resolve, reject) => {
@@ -15,22 +17,24 @@ function makeRequest(apiUrl, options = {}, retries = 3) {
         apiUrl,
         {
           headers: {
-            Authorization: API_KEY.startsWith("Bearer ") ? API_KEY : API_KEY,
-            "User-Agent": "DreamTeam/1.0",
-            Accept: "application/json",
+            "User-Agent":
+              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+            Accept: "application/json, text/plain, */*",
+            Authorization: BDL_API_KEY,
             ...options.headers,
           },
+          timeout: 8000, // 8 second timeout per request
         },
         (res) => {
           let data = "";
           res.on("data", (chunk) => (data += chunk));
           res.on("end", () => {
             if (res.statusCode === 429 && retriesLeft > 0) {
-              const backoff = 500 * Math.pow(2, 3 - retriesLeft); // 500ms, 1000ms, 2000ms
+              const backoff = 500 * Math.pow(2, 3 - retriesLeft);
               console.log(
-                `⚠️ Received 429, backing off ${backoff}ms and retrying (${
+                `⚠️ Rate limited, backing off ${backoff}ms (${
                   retriesLeft - 1
-                } tries left)`
+                } retries left)`
               );
               setTimeout(() => attemptRequest(retriesLeft - 1), backoff);
               return;
@@ -40,16 +44,9 @@ function makeRequest(apiUrl, options = {}, retries = 3) {
             try {
               parsed = JSON.parse(data);
             } catch (e) {}
+
             if (res.statusCode !== 200) {
-              console.log(`🔍 Upstream ${res.statusCode} ${apiUrl}`);
-              if (typeof parsed === "object") {
-                console.log(
-                  "🔍 Body snippet:",
-                  JSON.stringify(parsed).slice(0, 300)
-                );
-              } else {
-                console.log("🔍 Body raw:", String(parsed).slice(0, 300));
-              }
+              console.log(`🔍 HTTP ${res.statusCode}`);
             }
             resolve({ status: res.statusCode, data: parsed });
           });
@@ -58,10 +55,20 @@ function makeRequest(apiUrl, options = {}, retries = 3) {
 
       req.on("error", (err) => {
         if (retriesLeft > 0) {
-          console.log(`⏳ Retrying... (${retriesLeft} attempts left)`);
+          console.log(`⏳ Error, retrying... (${retriesLeft} attempts left)`);
           setTimeout(() => attemptRequest(retriesLeft - 1), 1000);
         } else {
           reject(err);
+        }
+      });
+
+      req.on("timeout", () => {
+        req.destroy();
+        if (retriesLeft > 0) {
+          console.log(`⏱️ Timeout, retrying... (${retriesLeft} attempts left)`);
+          setTimeout(() => attemptRequest(retriesLeft - 1), 1000);
+        } else {
+          reject(new Error("Request timeout"));
         }
       });
     };
@@ -104,26 +111,27 @@ const server = http.createServer(async (req, res) => {
 
   try {
     if (pathname === "/api/players") {
-      const teamId = query.team_id || 12;
-      const cacheKey = `players:${teamId}`;
+      console.log("📍 /api/players endpoint");
+      const cacheKey = "players:pacers";
       const cached = getCache(cacheKey);
+
       if (cached) {
         res.writeHead(200, { "Content-Type": "application/json" });
         res.end(JSON.stringify(cached));
         return;
       }
 
-      const apiUrl = `${BASE_API}/players?team_ids[]=${teamId}&per_page=100`;
-      const result = await makeRequest(apiUrl);
-      if (result && result.status === 200) {
-        try {
-          setCache(cacheKey, result.data, 1000 * 60 * 5);
-        } catch (e) {}
+      const playersUrl = `${BDL_BASE_API}/players?team_ids[]=${PACERS_TEAM_ID}&per_page=100`;
+      const result = await makeRequest(playersUrl);
+
+      if (result.status === 200 && result.data?.data) {
+        setCache(cacheKey, result.data, 1000 * 60 * 10);
       }
 
       res.writeHead(result.status, { "Content-Type": "application/json" });
-      res.end(JSON.stringify(result.data));
+      res.end(JSON.stringify(result.data || {}));
     } else if (pathname === "/api/stats") {
+      console.log("📍 /api/stats endpoint");
       const season = query.season || 2024;
       const playerIds = query.player_ids ? query.player_ids.split(",") : [];
 
@@ -133,163 +141,75 @@ const server = http.createServer(async (req, res) => {
         return;
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      const idParams = playerIds.map((id) => `player_ids[]=${id}`).join("&");
+      const statsUrl = `${BDL_BASE_API}/season_averages?season=${season}&${idParams}`;
+      const result = await makeRequest(statsUrl);
 
-      const playerIdParams = playerIds
-        .map((id) => `player_ids[]=${id}`)
-        .join("&");
-      const apiUrl = `${BASE_API}/season_averages?season=${season}&${playerIdParams}`;
-      console.log(`📡 Fetching stats from: ${apiUrl.substring(0, 100)}...`);
-      const result = await makeRequest(apiUrl);
-      console.log(`📦 Response status: ${result.status}`);
-      if (result.status !== 200) {
-        console.log(`⚠️ Response data:`, result.data);
-      }
       res.writeHead(result.status, { "Content-Type": "application/json" });
-      res.end(JSON.stringify(result.data));
+      res.end(JSON.stringify(result.data || {}));
     } else if (pathname === "/api/daily") {
-      const season = query.season || 2024;
-      const teamId = query.team_id || 12;
+      console.log("📍 /api/daily endpoint");
+      const season = query.season || 2023; // Ball Don't Lie's most recent data
       const todayKey = new Date().toISOString().split("T")[0];
-      const cacheKey = `daily:${teamId}:${season}:${todayKey}`;
+      const cacheKey = `daily:pacers:${season}:${todayKey}`;
       const forceRefresh = query.refresh === "1" || query.nocache === "1";
       const cached = getCache(cacheKey);
 
       if (cached && !forceRefresh) {
+        console.log("✅ Returning cached daily challenge");
         res.writeHead(200, { "Content-Type": "application/json" });
         res.end(JSON.stringify(cached));
         return;
       }
 
-      console.log(
-        `🔄 ${
-          forceRefresh ? "REFRESH" : "Initial"
-        } fetch - pulling fresh data...`
-      );
+      console.log(`🔄 Fetching fresh daily challenge (season ${season})...`);
 
-      const playersUrl = `${BASE_API}/players?team_ids[]=${teamId}&per_page=100`;
+      // Get all Pacers players
+      const playersUrl = `${BDL_BASE_API}/players?team_ids[]=${PACERS_TEAM_ID}&per_page=100`;
       const playersResult = await makeRequest(playersUrl);
-      let players = [];
-      let rateLimited = false;
-      if (playersResult.status === 200) {
-        players = playersResult.data.data || [];
-        console.log(`✅ Fetched ${players.length} players from API`);
-      } else if (playersResult.status === 429) {
-        rateLimited = true;
-        if (cached) {
-          res.writeHead(200, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ ...cached, rateLimited }));
-          return;
-        }
-        players = [
-          {
-            id: 1,
-            first_name: "Tyrese",
-            last_name: "Haliburton",
-            position: "G",
-          },
-          { id: 2, first_name: "Andrew", last_name: "Nembhard", position: "G" },
-          { id: 3, first_name: "Pascal", last_name: "Siakam", position: "F" },
-          { id: 4, first_name: "Obi", last_name: "Toppin", position: "F" },
-          {
-            id: 5,
-            first_name: "Bennedict",
-            last_name: "Mathurin",
-            position: "G",
-          },
-          { id: 6, first_name: "TJ", last_name: "McConnell", position: "G" },
-          { id: 7, first_name: "Isaiah", last_name: "Jackson", position: "C" },
-        ];
-      } else {
-        if (cached) {
-          res.writeHead(200, { "Content-Type": "application/json" });
-          res.end(
-            JSON.stringify({ ...cached, upstreamError: playersResult.status })
-          );
-          return;
-        }
-        players = [
-          {
-            id: 101,
-            first_name: "Fallback",
-            last_name: "Player1",
-            position: "G",
-          },
-          {
-            id: 102,
-            first_name: "Fallback",
-            last_name: "Player2",
-            position: "F",
-          },
-          {
-            id: 103,
-            first_name: "Fallback",
-            last_name: "Player3",
-            position: "C",
-          },
-          {
-            id: 104,
-            first_name: "Fallback",
-            last_name: "Player4",
-            position: "G",
-          },
-          {
-            id: 105,
-            first_name: "Fallback",
-            last_name: "Player5",
-            position: "F",
-          },
-        ];
+
+      if (playersResult.status !== 200 || !playersResult.data?.data?.length) {
+        res.writeHead(500, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Failed to fetch players" }));
+        return;
       }
-      const playerIds = players.map((p) => p.id);
+
+      const allPlayers = playersResult.data.data;
+      console.log(`✅ Got ${allPlayers.length} Pacers players`);
+
+      // Get stats for all players
+      const playerIds = allPlayers.map((p) => p.id);
       const idParams = playerIds.map((id) => `player_ids[]=${id}`).join("&");
-      const statsUrl = `${BASE_API}/season_averages?season=${season}&${idParams}`;
+      const statsUrl = `${BDL_BASE_API}/season_averages?season=${season}&${idParams}`;
       const statsResult = await makeRequest(statsUrl);
 
-      let fallback = false;
-      let merged = [];
-      if (statsResult.status === 200 && Array.isArray(statsResult.data.data)) {
-        const statsMap = new Map(
-          statsResult.data.data.map((s) => [s.player_id, s])
-        );
-        merged = players
-          .map((p) => {
-            const stat = statsMap.get(p.id);
-            if (!stat) {
-              return {
-                id: p.id,
-                name: `${p.first_name} ${p.last_name}`,
-                pts: p.position === "G" ? 8.0 : 6.0,
-                ast: p.position === "G" ? 2.0 : 1.0,
-              };
-            }
-            return {
-              id: p.id,
-              name: `${p.first_name} ${p.last_name}`,
-              pts: stat.pts || 0,
-              ast: stat.ast || 0,
-            };
-          })
-          .filter(Boolean); // Only filter out null/undefined, not zero-stat players
-      }
-      if (!merged.length) {
-        fallback = true;
-        merged = players.slice(0, 12).map((p) => {
-          let pts = 10 + Math.random() * 12;
-          let ast =
-            p.position === "G" ? 3 + Math.random() * 5 : 1 + Math.random() * 3;
-          return {
-            id: p.id,
-            name: `${p.first_name} ${p.last_name}`,
-            pts: parseFloat(pts.toFixed(1)),
-            ast: parseFloat(ast.toFixed(1)),
+      let statsByPlayer = {};
+      if (statsResult.status === 200 && statsResult.data?.data) {
+        statsResult.data.data.forEach((stat) => {
+          statsByPlayer[stat.player_id] = {
+            pts: stat.pts || 0,
+            ast: stat.ast || 0,
           };
         });
       }
 
-      // Use only current API players (no hard-coded legends)
-      const sorted = merged.sort((a, b) => b.pts - a.pts);
-      console.log(`📊 API players available: ${sorted.length}`);
+      // Merge player data with stats
+      const merged = allPlayers.map((p) => {
+        const stats = statsByPlayer[p.id] || { pts: 0, ast: 0 };
+        return {
+          id: p.id,
+          name: `${p.first_name} ${p.last_name}`,
+          pts: stats.pts,
+          ast: stats.ast,
+        };
+      });
+
+      // Filter out players with no stats (0 points and 0 assists)
+      const playersWithStats = merged.filter((p) => p.pts > 0 || p.ast > 0);
+      const sorted = playersWithStats.sort((a, b) => b.pts - a.pts);
+      console.log(`📊 Total players with stats: ${sorted.length}`);
+
+      // Sample function
       function sample(arr, n) {
         const copy = [...arr];
         for (let i = copy.length - 1; i > 0; i--) {
@@ -298,59 +218,32 @@ const server = http.createServer(async (req, res) => {
         }
         return copy.slice(0, n);
       }
-      let pool;
-      let goalPoints;
-      let goalAssists;
 
-      if (forceRefresh && cached) {
-        pool = sample(sorted, 5);
-        console.log(
-          `🎲 Refreshed players: ${pool.map((p) => p.name).join(", ")}`
-        );
-        goalPoints = cached.goals.points;
-        goalAssists = cached.goals.assists;
-      } else {
-        pool = sorted.slice(0, 12);
-        console.log(`⭐ Initial top 12: ${pool.map((p) => p.name).join(", ")}`);
-        const totalPoints = pool.reduce((s, p) => s + p.pts, 0);
-        const totalAssists = pool.reduce((s, p) => s + p.ast, 0);
+      // Calculate goals based on top 5 players
+      const top5 = sorted.slice(0, 5);
+      const totalPoints = top5.reduce((s, p) => s + p.pts, 0);
+      const totalAssists = top5.reduce((s, p) => s + p.ast, 0);
 
-        goalPoints = Math.max(1, Math.round(totalPoints * 0.9));
-        goalAssists = Math.max(1, Math.round(totalAssists * 0.9));
-      }
+      const goalPoints = Math.max(1, Math.round(totalPoints * 0.8));
+      const goalAssists = Math.max(1, Math.round(totalAssists * 0.8));
 
-      function ensureInPool(name) {
-        const idx = sorted.findIndex((p) => p.name.toLowerCase() === name);
-        if (idx !== -1 && !pool.some((p) => p.name.toLowerCase() === name)) {
-          pool.push(sorted[idx]);
-        }
-      }
-      ensureInPool("tyrese haliburton");
-      ensureInPool("andrew nembhard");
-      ensureInPool("pascal siakam");
-      ensureInPool("tj mcconnell");
-      ensureInPool("bennedict mathurin");
-      ensureInPool("aaron nesmith");
-
-      pool = sample(pool, Math.min(12, pool.length));
+      // Sample 5 random players
+      const pool = sample(sorted, Math.min(5, sorted.length));
 
       const payload = {
         date: todayKey,
         season,
-        teamId,
-        fallback,
-        refreshed: forceRefresh,
-        goalsLocked: !!(forceRefresh && cached),
+        source: "balldontlie",
         goals: { points: goalPoints, assists: goalAssists },
         players: pool.map((p) => ({
           id: p.id,
           name: p.name,
-          pts: p.pts,
-          ast: p.ast,
+          pts: parseFloat(p.pts.toFixed(1)),
+          ast: parseFloat(p.ast.toFixed(1)),
         })),
-        rateLimited,
       };
-      if (!forceRefresh) setCache(cacheKey, payload, 1000 * 60 * 10); // 10 min cache only for base daily
+
+      setCache(cacheKey, payload, 1000 * 60 * 10);
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify(payload));
     } else {
@@ -366,4 +259,5 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, () => {
   console.log(`✅ API server running on http://localhost:${PORT}`);
+  console.log(`📊 Using Ball Don't Lie API exclusively`);
 });
