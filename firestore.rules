@@ -15,8 +15,8 @@ service cloud.firestore {
         request.resource.data.keys().hasAll(["text", "timestamp"]) &&
         request.resource.data.text is string &&
         request.resource.data.text.size() <= 2000;
-      // disallow direct updates or deletes from clients
-      allow update, delete: if false;
+      // allow updates and deletes only for message owner
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.uid;
     }
 
     // default: deny

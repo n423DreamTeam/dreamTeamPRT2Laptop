@@ -43,6 +43,7 @@ if (loginBtn) {
     signInWithEmailAndPassword(auth, email, password)
       .then(() => {
         console.log("User logged in successfully");
+        alert("🎯 NEW DAILY CHALLENGE!");
         window.location.href = "/src/dashboard.html"; // redirect after login
       })
       .catch((error) => {

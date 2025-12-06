@@ -108,6 +108,58 @@ document.addEventListener("DOMContentLoaded", () => {
 
   renderUserPointsHud();
 
+  // === Toast notification for rewards ===
+  function showRewardToast(points) {
+    const toast = document.createElement("div");
+    toast.className = "reward-toast";
+    toast.style.cssText = `
+      position: fixed; bottom: 2rem; right: 2rem; z-index: 10000;
+      background: linear-gradient(135deg, #ffcb05, #ffb300);
+      color: #000; padding: 1.5rem 2rem; border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(255, 203, 5, 0.4);
+      font-weight: bold; font-size: 1.1rem;
+      animation: slideIn 0.5s ease-out;
+      font-family: Arial, sans-serif;
+    `;
+
+    toast.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 0.8rem;">
+        <span style="font-size: 1.8rem;">🎁</span>
+        <div>
+          <div style="font-size: 0.95rem;">YOU EARNED A NEW REWARD!</div>
+          <div style="font-size: 1.3rem; margin-top: 0.2rem;">+${points} POINTS</div>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(toast);
+
+    // Add animation keyframes if not already present
+    if (!document.querySelector("style[data-reward-toast]")) {
+      const style = document.createElement("style");
+      style.setAttribute("data-reward-toast", "true");
+      style.textContent = `
+        @keyframes slideIn {
+          from {
+            transform: translateX(450px);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    // Auto-remove after 4 seconds
+    setTimeout(() => {
+      toast.style.animation = "slideIn 0.5s ease-out reverse";
+      setTimeout(() => toast.remove(), 500);
+    }, 4000);
+  }
+
   // Keep local progress in sync with authenticated user data
   onAuthStateChanged(auth, (user) => {
     firebaseUser = user;
@@ -186,76 +238,110 @@ document.addEventListener("DOMContentLoaded", () => {
 
   updateChallengeDisplay();
 
-  // === Fetch Pacers players from backend API ===
+  // === Current roster with real stats ===
+  // Better players (higher PPG) are locked and require points to unlock
+  const currentRoster = [
+    { name: "Tyrese Haliburton", pts: 20.1, ast: 10.8, requiredPoints: 200 }, // Elite scorer
+    { name: "Pascal Siakam", pts: 21.3, ast: 4.8, requiredPoints: 200 }, // Elite scorer
+    { name: "Andrew Nembhard", pts: 9.2, ast: 4.1, requiredPoints: 0 },
+    { name: "Aaron Nesmith", pts: 12.2, ast: 1.5, requiredPoints: 100 },
+    { name: "Benedict Mathurin", pts: 14.5, ast: 2.0, requiredPoints: 150 }, // Good scorer
+    { name: "T.J. McConnell", pts: 9.8, ast: 4.3, requiredPoints: 0 },
+    { name: "Jay Huff", pts: 7.8, ast: 1.0, requiredPoints: 0 },
+    { name: "Obi Toppin", pts: 10.3, ast: 1.5, requiredPoints: 50 },
+    { name: "Ben Sheppard", pts: 5.1, ast: 1.2, requiredPoints: 0 },
+    { name: "Jarace Walker", pts: 3.8, ast: 0.9, requiredPoints: 0 },
+    { name: "Isaiah Jackson", pts: 8.2, ast: 1.0, requiredPoints: 0 },
+    { name: "Johnny Furphy", pts: 2.5, ast: 0.3, requiredPoints: 0 },
+    { name: "Taelon Peter", pts: 1.8, ast: 1.1, requiredPoints: 0 },
+    { name: "Kam Jones", pts: 0.0, ast: 0.0, requiredPoints: 0 },
+    { name: "Tony Bradley", pts: 4.9, ast: 0.7, requiredPoints: 0 },
+    { name: "Jeremiah Robinson-Earl", pts: 4.8, ast: 0.8, requiredPoints: 0 },
+    { name: "Quenton Jackson", pts: 11.8, ast: 3.6, requiredPoints: 100 }, // Good scorer
+    { name: "Ethan Thompson", pts: 2.0, ast: 1.0, requiredPoints: 0 },
+  ];
+
+  // === Fetch Pacers players from backend API + merge with current roster ===
   async function fetchPacersPlayers() {
     const cacheKey = "pacersPlayers_2024";
+    let allPlayersPool = [...currentRoster]; // Start with current roster
 
     try {
-      // Fetch players from Pacers team
+      // Try to fetch additional players from API for historical/past players
       const playersRes = await fetch(`${API_URL}/players?team_id=12`);
 
       // Handle rate limit from proxy/server
       if (playersRes.status === 429) {
-        console.warn("⚠️ Server returned 429 Too Many Requests");
-        playersContainer.innerHTML = `<p style="color:yellow">⚠️ Server is being rate-limited. Please wait a few seconds and try again.</p>`;
-        // Disable refresh button briefly to prevent spamming
-        if (refreshBtn) {
-          refreshBtn.disabled = true;
-          setTimeout(() => (refreshBtn.disabled = false), 20000); // 20s
-        }
-        return;
+        console.warn(
+          "⚠️ Server returned 429 Too Many Requests, using current roster only"
+        );
+        // Use current roster only
+      } else if (playersRes.ok) {
+        const playersData_raw = await playersRes.json();
+        const apiPlayers = playersData_raw.data || [];
+
+        console.log(`🟣 Found ${apiPlayers.length} players from API.`);
+
+        // Convert API players to our format
+        const apiFormattedPlayers = apiPlayers
+          .map((p) => {
+            // Check if this player is already in current roster
+            const existsInRoster = currentRoster.some(
+              (cr) =>
+                cr.name.toLowerCase() ===
+                `${p.first_name} ${p.last_name}`.toLowerCase()
+            );
+
+            // Skip if already in current roster (avoid duplicates)
+            if (existsInRoster) return null;
+
+            // Generate realistic stats based on position for API players
+            let pts, ast;
+            if (p.position === "G") {
+              pts = 10 + Math.random() * 15;
+              ast = 4 + Math.random() * 4;
+            } else if (p.position === "F") {
+              pts = 12 + Math.random() * 15;
+              ast = 2 + Math.random() * 3;
+            } else if (p.position === "C") {
+              pts = 10 + Math.random() * 14;
+              ast = 1 + Math.random() * 2;
+            } else {
+              pts = 8 + Math.random() * 12;
+              ast = 2 + Math.random() * 3;
+            }
+
+            return {
+              name: `${p.first_name} ${p.last_name}`,
+              pts: parseFloat(pts.toFixed(1)),
+              ast: parseFloat(ast.toFixed(1)),
+              // Past players require points to unlock
+              requiredPoints:
+                pts >= 18 ? 200 : pts >= 16 ? 150 : pts >= 14 ? 120 : 50,
+            };
+          })
+          .filter((p) => p !== null);
+
+        // Merge API players with current roster
+        allPlayersPool = [...currentRoster, ...apiFormattedPlayers];
+        console.log(
+          `✅ Merged current roster (${currentRoster.length}) with API players (${apiFormattedPlayers.length})`
+        );
       }
-
-      if (!playersRes.ok)
-        throw new Error(`Failed to fetch players: ${playersRes.status}`);
-      const playersData_raw = await playersRes.json();
-      const allPacers = playersData_raw.data;
-
-      console.log(`🟣 Found ${allPacers.length} Pacers players.`);
-
-      // For now, use estimated stats based on player position (free API tier limitation)
-      const withStats = allPacers
-        .map((p) => {
-          // Generate realistic stats based on position
-          let pts, ast;
-          if (p.position === "G") {
-            pts = 10 + Math.random() * 15;
-            ast = 4 + Math.random() * 4;
-          } else if (p.position === "F") {
-            pts = 12 + Math.random() * 15;
-            ast = 2 + Math.random() * 3;
-          } else if (p.position === "C") {
-            pts = 10 + Math.random() * 14;
-            ast = 1 + Math.random() * 2;
-          } else {
-            pts = 8 + Math.random() * 12;
-            ast = 2 + Math.random() * 3;
-          }
-
-          return {
-            id: p.id,
-            name: `${p.first_name} ${p.last_name}`,
-            pts: parseFloat(pts.toFixed(1)),
-            ast: parseFloat(ast.toFixed(1)),
-            // Determine unlock requirement dynamically based on generated scoring
-            // Higher-scoring players require more user points to unlock
-            requiredPoints:
-              pts >= 18 ? 200 : pts >= 16 ? 150 : pts >= 14 ? 120 : 0,
-          };
-        })
-        .filter((p) => p.pts > 0);
-
-      // Shuffle and get only 5 random players
-      const shuffled = withStats.sort(() => Math.random() - 0.5);
-      const selectedPlayers = shuffled.slice(0, 5);
-
-      playersData = selectedPlayers;
-      console.log(`✅ Loaded 5 random players`);
-      displayPlayers(playersData);
     } catch (err) {
-      console.error("❌ Error fetching Pacers players:", err);
-      playersContainer.innerHTML = `<p style="color:red">❌ Error loading players. Check console for details.</p>`;
+      console.warn(
+        "⚠️ API fetch error, using current roster only:",
+        err.message
+      );
     }
+
+    // Shuffle and select 5 players, with bias towards current roster
+    const shuffled = allPlayersPool.sort(() => Math.random() - 0.5);
+    const selectedPlayers = shuffled.slice(0, 5);
+
+    playersData = selectedPlayers;
+    console.log(`✅ Loaded 5 players for today's challenge`);
+    displayPlayers(playersData);
   }
 
   // === Display players ===
@@ -330,10 +416,14 @@ document.addEventListener("DOMContentLoaded", () => {
   function showChallengeComplete(totalPoints, totalAssists) {
     // Award user points and record a win
     const reward = Math.max(25, Math.round(goalPoints * 0.2)); // minimum reward
+    const previousPoints = userProgress.points;
     userProgress.points += reward;
     userProgress.wins += 1;
     saveProgress();
     renderUserPointsHud();
+
+    // Show reward toast notification
+    showRewardToast(reward);
 
     const perfectChallengeAchieved =
       totalPoints >= goalPoints * 1.5 && totalAssists >= goalAssists * 1.5;
@@ -343,6 +433,13 @@ document.addEventListener("DOMContentLoaded", () => {
       pointsDelta: reward,
       winIncrement: 1,
       perfectChallengeAchieved,
+    });
+
+    // Check for newly unlocked players from current roster
+    const newlyUnlockedPlayers = currentRoster.filter((player) => {
+      const wasLocked = previousPoints < player.requiredPoints;
+      const isNowUnlocked = userProgress.points >= player.requiredPoints;
+      return wasLocked && isNowUnlocked && player.requiredPoints > 0;
     });
 
     // Create modal overlay and popup
@@ -362,11 +459,35 @@ document.addEventListener("DOMContentLoaded", () => {
       color: white; font-family: Arial, sans-serif;
     `;
 
+    let unlockedHtml = "";
+    if (newlyUnlockedPlayers.length > 0) {
+      unlockedHtml = `
+        <div style="
+          background: rgba(255, 203, 5, 0.2); border: 2px solid #ffcb05;
+          border-radius: 12px; padding: 1.5rem; margin: 1.5rem 0;
+        ">
+          <div style="font-size: 2rem; margin-bottom: 0.5rem;">🔓</div>
+          <p style="font-size: 0.95rem; margin: 0 0 0.8rem 0; color: #ffcb05; font-weight: bold;">
+            YOU HAVE UNLOCKED THESE PLAYERS!
+          </p>
+          <div style="text-align: left; display: flex; flex-direction: column; gap: 0.5rem;">
+            ${newlyUnlockedPlayers
+              .map(
+                (p) =>
+                  `<div style="font-size: 0.9rem; color: #fff; font-weight: 500;">⭐ ${p.name}</div>`
+              )
+              .join("")}
+          </div>
+        </div>
+      `;
+    }
+
     popup.innerHTML = `
       <div style="font-size: 4rem; margin-bottom: 1rem;">🏆</div>
       <h2 style="font-size: 2rem; margin: 0.5rem 0; color: #ffcb05;">Awesome Work!</h2>
       <p style="font-size: 1.1rem; margin: 1rem 0; color: rgba(255,255,255,0.9);">You crushed that challenge!</p>
       <p style="font-size: 1rem; margin: 1rem 0; color: #ffcb05; font-weight: bold;">+${reward} Points</p>
+      ${unlockedHtml}
       <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center;">
         <button id="play-again-btn" style="
           background: linear-gradient(135deg, #ffcb05, #ffb300);

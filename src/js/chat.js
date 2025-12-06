@@ -7,6 +7,8 @@ import {
   serverTimestamp,
   getDoc,
   doc,
+  updateDoc,
+  deleteDoc,
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { app, db } from "../../firebase.js";
@@ -31,6 +33,7 @@ if (messagesDiv) {
     // Process messages sequentially to maintain order
     for (const docSnap of snapshot.docs) {
       const msg = docSnap.data();
+      const messageId = docSnap.id;
       const time = msg.timestamp
         ? new Date(msg.timestamp.toDate()).toLocaleTimeString([], {
             hour: "2-digit",
@@ -40,6 +43,7 @@ if (messagesDiv) {
 
       const div = document.createElement("div");
       div.classList.add("message");
+      div.setAttribute("data-message-id", messageId);
 
       // Check if this message is from current user
       const isSelf = auth.currentUser && msg.uid === auth.currentUser.uid;
@@ -82,19 +86,84 @@ if (messagesDiv) {
         msg.username ? ` <span class="username">@${msg.username}</span>` : ""
       }`;
 
+      // Edit/Delete buttons for own messages
+      let actionButtonsHtml = "";
+      if (isSelf) {
+        actionButtonsHtml = `
+          <div class="message-actions">
+            <button class="edit-btn" data-id="${messageId}" title="Edit">✏️</button>
+            <button class="delete-btn" data-id="${messageId}" title="Delete">🗑️</button>
+          </div>
+        `;
+      }
+
+      const editIndicator = msg.edited
+        ? `<span class="edited-label">(edited)</span>`
+        : "";
+
       div.innerHTML = `
         ${avatarHtml}
         <div class="msg-content">
-          <h4>${nameLine} <span class="time">${time}</span></h4>
-          <p>${msg.text}</p>
+          <h4>${nameLine} <span class="time">${time}</span> ${editIndicator}</h4>
+          <p class="message-text">${msg.text}</p>
         </div>
+        ${actionButtonsHtml}
       `;
 
       messagesDiv.appendChild(div);
+
+      // Attach event listeners for edit/delete buttons
+      if (isSelf) {
+        const editBtn = div.querySelector(".edit-btn");
+        const deleteBtn = div.querySelector(".delete-btn");
+
+        editBtn.addEventListener("click", () => {
+          editMessage(messageId, msg.text, div);
+        });
+
+        deleteBtn.addEventListener("click", () => {
+          deleteMessage(messageId);
+        });
+      }
     }
 
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
   });
+}
+
+// === Edit Message Function ===
+async function editMessage(messageId, currentText, messageDiv) {
+  const newText = prompt("Edit your message:", currentText);
+
+  if (newText === null) return; // User cancelled
+  if (newText.trim() === "") {
+    alert("Message cannot be empty");
+    return;
+  }
+
+  try {
+    await updateDoc(doc(db, "messages", messageId), {
+      text: newText.trim(),
+      edited: true,
+    });
+    console.log("Message edited successfully");
+  } catch (err) {
+    console.error("Failed to edit message:", err);
+    alert("Failed to edit message. Please try again.");
+  }
+}
+
+// === Delete Message Function ===
+async function deleteMessage(messageId) {
+  if (!confirm("Are you sure you want to delete this message?")) return;
+
+  try {
+    await deleteDoc(doc(db, "messages", messageId));
+    console.log("Message deleted successfully");
+  } catch (err) {
+    console.error("Failed to delete message:", err);
+    alert("Failed to delete message. Please try again.");
+  }
 }
 
 // Send message
@@ -138,4 +207,17 @@ if (msgForm) {
       alert("Failed to send message. Please try again.");
     }
   });
+}
+
+// === Populate daily challenge date ===
+const dateElement = document.getElementById("challenge-date");
+if (dateElement) {
+  const today = new Date();
+  const formattedDate = today.toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+  dateElement.textContent = formattedDate;
 }

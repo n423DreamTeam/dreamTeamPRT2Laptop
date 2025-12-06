@@ -170,7 +170,7 @@ body.chat-body {
     border-radius: 16px;
     padding: 1rem 1.25rem;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 1.25rem;
     min-height: 70px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -279,7 +279,58 @@ body.chat-body {
         color: rgba(255, 255, 255, 0.5);
         font-weight: normal;
       }
+
+      p {
+        margin: 0 0 0.5rem 0;
+        color: rgba(255, 255, 255, 0.9);
+        line-height: 1.4;
+        word-wrap: break-word;
+      }
+
+      .edited-label {
+        font-size: 0.75rem;
+        color: rgba(255, 203, 5, 0.7);
+        font-style: italic;
+        margin-left: 0.5rem;
+      }
     }
+
+    .message-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-left: auto;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      align-self: center;
+      flex-shrink: 0;
+
+      .edit-btn,
+      .delete-btn {
+        background: transparent;
+        border: none;
+        font-size: 1.2rem;
+        cursor: pointer;
+        padding: 0.25rem 0.5rem;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        &:hover {
+          background: rgba(255, 203, 5, 0.2);
+          transform: scale(1.1);
+        }
+
+        &:active {
+          transform: scale(0.95);
+        }
+      }
+    }
+  }
+
+  .message:hover .message-actions {
+    opacity: 1;
   }
 
   .message-form {
