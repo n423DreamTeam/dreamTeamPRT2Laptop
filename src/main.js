@@ -1,5 +1,6 @@
 import "./scss/styles.scss";
 import "./js/scroll-animations.js";
+import "./js/nav.js";
 
 import {
   getAuth,
@@ -16,11 +17,67 @@ import { app } from "../firebase.js";
 // Use shared Firebase app instance
 const auth = getAuth(app);
 
+// === Styled Toast Notification ===
+function showToastNotification(
+  message,
+  icon = "🎯",
+  bgColor = "linear-gradient(135deg, #ffcb05, #ffb300)"
+) {
+  const toast = document.createElement("div");
+  toast.style.cssText = `
+    position: fixed; bottom: 2rem; right: 2rem; z-index: 10000;
+    background: ${bgColor};
+    color: #000; padding: 1.5rem 2rem; border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(255, 203, 5, 0.4);
+    font-weight: bold; font-size: 1.1rem;
+    animation: slideIn 0.5s ease-out;
+    font-family: Arial, sans-serif;
+  `;
+
+  toast.innerHTML = `
+    <div style="display: flex; align-items: center; gap: 0.8rem;">
+      <span style="font-size: 1.8rem;">${icon}</span>
+      <div>${message}</div>
+    </div>
+  `;
+
+  document.body.appendChild(toast);
+
+  // Add animation keyframes if not already present
+  if (!document.querySelector("style[data-challenge-toast]")) {
+    const style = document.createElement("style");
+    style.setAttribute("data-challenge-toast", "true");
+    style.textContent = `
+      @keyframes slideIn {
+        from {
+          transform: translateX(450px);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  // Auto-remove after 3 seconds
+  setTimeout(() => {
+    toast.style.animation = "slideIn 0.5s ease-out reverse";
+    setTimeout(() => toast.remove(), 500);
+  }, 3000);
+}
+
 // Track login state
 onAuthStateChanged(auth, (user) => {
   if (user) {
     console.log("User is signed in:", user.email, user.displayName);
-    // Removed auto-redirect from login/signup so user can choose to switch accounts.
+    // Show challenge notification on homepage
+    const path = window.location.pathname;
+    if (path.includes("index.html") || path === "/") {
+      showToastNotification("NEW DAILY CHALLENGE!", "🎯");
+    }
   } else {
     console.log("No user is signed in.");
 
@@ -43,8 +100,8 @@ if (loginBtn) {
     signInWithEmailAndPassword(auth, email, password)
       .then(() => {
         console.log("User logged in successfully");
-        alert("🎯 NEW DAILY CHALLENGE!");
-        window.location.href = "/src/dashboard.html"; // redirect after login
+        showToastNotification("NEW DAILY CHALLENGE!", "🎯");
+        window.location.href = "/dashboard.html";
       })
       .catch((error) => {
         console.error("Error logging in:", error);
@@ -75,7 +132,7 @@ if (signupBtn) {
       })
       .then(() => {
         console.log("✅ User signed up and profile updated!");
-        window.location.href = "/src/dashboard.html";
+        window.location.href = "/dashboard.html";
       })
       .catch((error) => {
         console.error("❌ Error signing up:", error);
@@ -93,7 +150,7 @@ if (googleBtn) {
     signInWithPopup(auth, provider)
       .then((result) => {
         console.log("Google sign-in successful:", result.user.email);
-        window.location.href = "/src/dashboard.html";
+        window.location.href = "/dashboard.html";
       })
       .catch((error) => {
         console.error("Error with Google sign-in:", error);

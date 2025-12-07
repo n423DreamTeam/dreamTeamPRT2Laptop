@@ -10,7 +10,7 @@
   min-height: 100vh;
   padding: 2rem 4rem 4rem 4rem;
   color: #fff;
-  font-family: basketball;
+  font-family: $font-heading;
   position: relative;
   z-index: 0;
 }
@@ -18,6 +18,7 @@
 .profile-wrapper {
   max-width: 1200px;
   margin: 0 auto;
+  padding-top: 120px;
 }
 
 .back-link {
@@ -66,7 +67,7 @@
       font-size: 4rem;
       font-weight: 900;
       margin: 0 0 1rem 0;
-      font-family: basketball;
+      font-family: $font-heading;
       color: #fff;
 
       .hero-number {
@@ -82,7 +83,7 @@
       text-transform: uppercase;
       letter-spacing: 0.1em;
       margin: 0;
-      font-family: basketball;
+      font-family: $font-heading;
     }
   }
 }
@@ -102,7 +103,7 @@
       text-transform: uppercase;
       letter-spacing: 0.05em;
       margin: 0 0 1.5rem 0;
-      font-family: basketball;
+      font-family: $font-heading;
     }
   }
 }
@@ -159,7 +160,7 @@
       font-size: 2.8rem;
       font-weight: 900;
       color: #fdb927;
-      font-family: basketball;
+      font-family: $font-heading;
       line-height: 1;
     }
   }
@@ -257,7 +258,7 @@
     font-size: 3rem;
     color: #fdb927;
     margin-bottom: 1rem;
-    font-family: basketball;
+    font-family: $font-heading;
   }
 
   p {
@@ -329,6 +330,350 @@
 
     .detail-item {
       padding: 1.25rem 1rem;
+    }
+  }
+}
+
+@media (max-width: 1200px) {
+  .player-profile-main {
+    padding: 2rem 2.5rem 3rem 2.5rem;
+  }
+
+  .profile-hero {
+    gap: 2.5rem;
+    padding: 2.5rem;
+
+    .hero-img {
+      width: 250px;
+      height: 350px;
+    }
+
+    .hero-info {
+      h1 {
+        font-size: 3.2rem;
+
+        .hero-number {
+          font-size: 4rem;
+        }
+      }
+
+      .hero-position {
+        font-size: 1.7rem;
+      }
+    }
+  }
+
+  .profile-content {
+    section {
+      padding: 1.8rem;
+      margin-bottom: 1.8rem;
+
+      h3 {
+        font-size: 1.7rem;
+        margin-bottom: 1.2rem;
+      }
+    }
+
+    .stats-grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.2rem;
+
+      .stat-box {
+        padding: 1.2rem;
+
+        .stat-value {
+          font-size: 2rem;
+        }
+
+        .stat-label {
+          font-size: 0.9rem;
+        }
+      }
+    }
+
+    .details-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.2rem;
+
+      .detail-item {
+        padding: 1.2rem;
+        font-size: 0.95rem;
+      }
+    }
+  }
+}
+
+@media (max-width: 900px) {
+  .player-profile-main {
+    padding: 1.5rem 1.5rem 2.5rem 1.5rem;
+    margin-top: 80px;
+  }
+
+  .back-link {
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .profile-hero {
+    flex-direction: column;
+    gap: 2rem;
+    padding: 2rem;
+    text-align: center;
+
+    .hero-img {
+      width: 220px;
+      height: 300px;
+    }
+
+    .hero-info {
+      h1 {
+        font-size: 2.5rem;
+
+        .hero-number {
+          font-size: 3.2rem;
+        }
+      }
+
+      .hero-position {
+        font-size: 1.5rem;
+        margin: 0.5rem 0 0 0;
+      }
+    }
+  }
+
+  .profile-content {
+    section {
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+
+      h3 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+      }
+    }
+
+    .stats-grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+
+      .stat-box {
+        padding: 1rem;
+
+        .stat-value {
+          font-size: 1.8rem;
+        }
+
+        .stat-label {
+          font-size: 0.85rem;
+        }
+      }
+    }
+
+    .details-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+
+      .detail-item {
+        padding: 1rem;
+        font-size: 0.9rem;
+      }
+    }
+
+    .achievements {
+      ul {
+        li {
+          padding: 0.8rem;
+          font-size: 0.9rem;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 600px) {
+  .player-profile-main {
+    padding: 1.2rem 1rem 2rem 1rem;
+  }
+
+  .back-link {
+    font-size: 0.95rem;
+    margin-bottom: 1.2rem;
+  }
+
+  .profile-hero {
+    gap: 1.5rem;
+    padding: 1.5rem;
+
+    .hero-img {
+      width: 180px;
+      height: 250px;
+      border-width: 3px;
+    }
+
+    .hero-info {
+      h1 {
+        font-size: 1.8rem;
+
+        .hero-number {
+          font-size: 2.3rem;
+        }
+      }
+
+      .hero-position {
+        font-size: 1.2rem;
+      }
+    }
+  }
+
+  .profile-content {
+    section {
+      padding: 1.2rem;
+      margin-bottom: 1.2rem;
+
+      h3 {
+        font-size: 1.3rem;
+        margin-bottom: 0.9rem;
+      }
+    }
+
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.9rem;
+
+      .stat-box {
+        padding: 0.9rem;
+
+        .stat-value {
+          font-size: 1.5rem;
+        }
+
+        .stat-label {
+          font-size: 1rem;
+        }
+        #text {
+          font-size: 1.6rem;
+        }
+      }
+    }
+
+    .details-grid {
+      grid-template-columns: 1fr;
+      gap: 0.9rem;
+
+      .detail-item {
+        padding: 0.9rem;
+        font-size: 0.85rem;
+      }
+    }
+
+    .achievements {
+      ul {
+        li {
+          padding: 0.7rem;
+          font-size: 0.85rem;
+
+          &::before {
+            margin-right: 0.5rem;
+            font-size: 0.9rem;
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .player-profile-main {
+    padding: 1rem 0.8rem 1.5rem 0.8rem;
+  }
+
+  .back-link {
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+  }
+
+  .profile-hero {
+    gap: 1.2rem;
+    padding: 1.2rem;
+    border-radius: 16px;
+
+    .hero-img {
+      width: 160px;
+      height: 220px;
+      border-radius: 16px;
+      border-width: 2px;
+    }
+
+    .hero-info {
+      h1 {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+
+        .hero-number {
+          font-size: 2rem;
+        }
+      }
+
+      .hero-position {
+        font-size: 1rem;
+      }
+    }
+  }
+
+  .profile-content {
+    section {
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border-radius: 16px;
+
+      h3 {
+        font-size: 1.1rem;
+        margin-bottom: 0.8rem;
+      }
+    }
+
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.8rem;
+
+      .stat-box {
+        padding: 0.8rem;
+        border-radius: 12px;
+
+        .stat-value {
+          font-size: 1.3rem;
+        }
+
+        .stat-label {
+          font-size: 0.75rem;
+        }
+      }
+    }
+
+    .details-grid {
+      grid-template-columns: 1fr;
+      gap: 0.8rem;
+
+      .detail-item {
+        padding: 0.8rem;
+        font-size: 0.8rem;
+        border-radius: 8px;
+      }
+    }
+
+    .achievements {
+      ul {
+        li {
+          padding: 0.6rem;
+          font-size: 0.8rem;
+          border-radius: 6px;
+
+          &::before {
+            margin-right: 0.4rem;
+            font-size: 0.85rem;
+          }
+        }
+      }
     }
   }
 }

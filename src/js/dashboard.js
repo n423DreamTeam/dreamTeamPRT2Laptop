@@ -18,9 +18,13 @@ document.addEventListener("DOMContentLoaded", () => {
   let assistsVal = document.querySelector("#assists-val");
   const refreshBtn = document.getElementById("refresh-btn");
 
-  // ✅ Backend API endpoint (running on localhost:3001)
-  const API_URL = "http://localhost:3001/api";
+  // ✅ Backend API endpoint
+  const API_URL =
+    window.location.hostname === "localhost"
+      ? "http://localhost:3001/api"
+      : "/api";
 
+  let allPlayersPool = [];
   let playersData = [];
   let lineup = [];
 
@@ -261,22 +265,34 @@ document.addEventListener("DOMContentLoaded", () => {
     { name: "Ethan Thompson", pts: 2.0, ast: 1.0, requiredPoints: 0 },
   ];
 
+  function pickRandomPlayers(pool, count = 5) {
+    const shuffled = [...pool].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, Math.min(count, shuffled.length));
+  }
+
   // === Fetch Pacers players from backend API + merge with current roster ===
   async function fetchPacersPlayers() {
     const cacheKey = "pacersPlayers_2024";
-    let allPlayersPool = [...currentRoster]; // Start with current roster
+    allPlayersPool = [...currentRoster]; // Start with current roster
 
     try {
       // Try to fetch additional players from API for historical/past players
       const playersRes = await fetch(`${API_URL}/players?team_id=12`);
 
-      // Handle rate limit from proxy/server
+      // Handle various error responses
       if (playersRes.status === 429) {
         console.warn(
           "⚠️ Server returned 429 Too Many Requests, using current roster only"
         );
-        // Use current roster only
-      } else if (playersRes.ok) {
+      } else if (playersRes.status === 403) {
+        console.warn(
+          "⚠️ Server returned 403 Forbidden, using current roster only"
+        );
+      } else if (!playersRes.ok) {
+        console.warn(
+          `⚠️ Server returned ${playersRes.status}, using current roster only`
+        );
+      } else {
         const playersData_raw = await playersRes.json();
         const apiPlayers = playersData_raw.data || [];
 
@@ -325,7 +341,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Merge API players with current roster
         allPlayersPool = [...currentRoster, ...apiFormattedPlayers];
         console.log(
-          `✅ Merged current roster (${currentRoster.length}) with API players (${apiFormattedPlayers.length})`
+          `✅ Merged current roster (${currentRoster.length}) with API players (${apiFormattedPlayers.length}). Total pool: ${allPlayersPool.length}`
         );
       }
     } catch (err) {
@@ -335,23 +351,29 @@ document.addEventListener("DOMContentLoaded", () => {
       );
     }
 
-    // Shuffle and select 5 players, with bias towards current roster
-    const shuffled = allPlayersPool.sort(() => Math.random() - 0.5);
-    const selectedPlayers = shuffled.slice(0, 5);
-
-    playersData = selectedPlayers;
-    console.log(`✅ Loaded 5 players for today's challenge`);
+    // Display only 5 random players from the full pool
+    playersData = pickRandomPlayers(allPlayersPool, 5);
+    console.log(
+      `✅ Loaded ${allPlayersPool.length} total players (${
+        currentRoster.length
+      } roster + ${
+        allPlayersPool.length - currentRoster.length
+      } API); showing ${playersData.length}`
+    );
     displayPlayers(playersData);
   }
 
   // === Display players ===
   function displayPlayers(players) {
-    if (!players.length) {
+    // Hard cap to 5 visible entries even if called with a larger array
+    const visible = players.slice(0, 5);
+
+    if (!visible.length) {
       playersContainer.innerHTML = `<p style="color:yellow">No Pacers found.</p>`;
       return;
     }
     // Build HTML with lock state
-    playersContainer.innerHTML = players
+    playersContainer.innerHTML = visible
       .map((p) => {
         const locked =
           p.requiredPoints && userProgress.points < p.requiredPoints;
@@ -612,8 +634,13 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   refreshBtn.addEventListener("click", () => {
-    // Fetch new roster of 5 players ONLY (don't clear lineup)
-    fetchPacersPlayers();
+    // Reshuffle to a new set of 5 from the existing pool; if empty, refetch
+    if (!allPlayersPool.length) {
+      fetchPacersPlayers();
+      return;
+    }
+    playersData = pickRandomPlayers(allPlayersPool, 5);
+    displayPlayers(playersData);
   });
   const slider = document.querySelector(".slider");
   const quantity = parseInt(

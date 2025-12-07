@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DreamTeam | Leaderboard</title>
+    <title>Pacer Players</title>
     <link rel="icon" type="image/x-icon" href="/src/images/favicon.ico" />
     <link
       rel="icon"
@@ -17,11 +17,14 @@
       sizes="16x16"
       href="/src/images/favicon-16x16.png"
     />
-    <link rel="stylesheet" href="/src/css/styles.css" />
+    <!-- Vite injects styles from main.js -->
   </head>
-  <body class="leaderboard-body">
+  <body
+    class="players-body"
+    style="background-color: #002d62; margin: 0; padding: 0"
+  >
     <header class="navbar">
-      <a style="text-decoration: none" href="/src/dashboard.html">
+      <a style="text-decoration: none" href="/dashboard.html">
         <div class="logo">DREAMTEAM</div>
       </a>
       <div class="hamburger">
@@ -30,27 +33,21 @@
         <span></span>
       </div>
       <nav>
-        <a href="/src/dashboard.html">Challenge</a>
+        <a href="/dashboard.html">Challenge</a>
         <span>|</span>
-        <a href="/src/leadboard.html">Leaderboard</a>
+        <a href="/leadboard.html">Leaderboard</a>
         <span>|</span>
-        <a href="/src/chat.html">Chat</a>
+        <a href="/chat.html">Chat</a>
         <span>|</span>
-        <a href="/src/rewards.html">Rewards</a>
+        <a href="/rewards.html">Rewards</a>
         <span>|</span>
-        <a href="/src/players.html">Players</a>
+        <a href="#" class="active">Players</a>
         <a
-          href="./account.html"
+          href="/account.html"
           title="Account"
           style="margin-left: 1rem; display: inline-flex; align-items: center"
         >
-          <svg
-            width="28"
-            height="28"
-            viewBox="0 0 24 24"
-            fill="none"
-            style="vertical-align: middle"
-          >
+          <svg width="28" height="28" viewBox="0 0 24 24">
             <circle cx="12" cy="8" r="4" fill="#ffcb05" />
             <path
               d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6"
@@ -62,26 +59,34 @@
         </a>
       </nav>
     </header>
-
-    <main class="leaderboard-main">
-      <section class="leaderboard-header">
-        <h1>LEADERBOARD:</h1>
-        <a href="/src/dashboard.html#puzzle" class="daily">
-          <p>
-            DAILY CHALLENGE :
-            <strong id="challenge-date">October 24, 2025</strong>
-          </p>
-        </a>
-      </section>
-
-      <section class="leaderboard-list">
-        <h2>🏆 Leaderboard</h2>
-        <ul id="leaderboard-users">
-          <li class="placeholder">Loading leaderboard...</li>
-        </ul>
-      </section>
+    <main class="players-main">
+      <h1>CURRENT PACER PLAYERS</h1>
+      <div class="players-filter-bar">
+        <input
+          type="text"
+          id="player-search"
+          placeholder="Search player by name"
+        />
+        <div class="filter-buttons">
+          <button data-filter="all" class="active">ALL</button>
+          <button data-filter="guards">GUARDS</button>
+          <button data-filter="forwards">FORWARDS</button>
+          <button data-filter="centers">CENTERS</button>
+        </div>
+      </div>
+      <div class="players-grid" id="players-grid">
+        <!-- Player cards will be injected here by JS -->
+      </div>
+      <div class="pagination-buttons">
+        <button id="prev-page" class="prev-page-btn" style="display: none">
+          PREVIOUS PAGE
+        </button>
+        <button id="next-page" class="next-page-btn">NEXT PAGE</button>
+      </div>
     </main>
-
+    <div id="player-modal" class="player-modal hidden">
+      <!-- Player profile details will be injected here by JS -->
+    </div>
     <footer class="footer">
       <div class="footer-content">
         <div class="footer-section footer-brand">
@@ -95,12 +100,12 @@
         <div class="footer-section">
           <h3>Navigate</h3>
           <ul>
-            <li><a href="/src/dashboard.html">Daily Challenge</a></li>
-            <li><a href="/src/leadboard.html">Leaderboard</a></li>
-            <li><a href="/src/players.html">Players</a></li>
-            <li><a href="/src/chat.html">Chat</a></li>
-            <li><a href="/src/rewards.html">Rewards</a></li>
-            <li><a href="/src/account.html">Account</a></li>
+            <li><a href="/dashboard.html">Daily Challenge</a></li>
+            <li><a href="/leadboard.html">Leaderboard</a></li>
+            <li><a href="/players.html">Players</a></li>
+            <li><a href="/chat.html">Chat</a></li>
+            <li><a href="/rewards.html">Rewards</a></li>
+            <li><a href="/account.html">Account</a></li>
           </ul>
         </div>
         <div class="footer-section">
@@ -113,12 +118,9 @@
           </ul>
         </div>
       </div>
-      <div class="footer-bottom">
-        <p>DREAMTEAM © 2025 — Made by Megan</p>
-      </div>
     </footer>
     <script type="module" src="/src/main.js" defer></script>
     <script type="module" src="/src/js/nav.js" defer></script>
-    <script type="module" src="/src/js/leaderboard.js" defer></script>
+    <script type="module" src="/src/js/players.js" defer></script>
   </body>
 </html>

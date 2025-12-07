@@ -1,18 +1,28 @@
-import * as functions from "firebase-functions";
-import https from "https";
+const { onRequest } = require("firebase-functions/v2/https");
+const { setGlobalOptions } = require("firebase-functions/v2");
+const https = require("https");
 
+// Use 2nd gen with fixed region
+setGlobalOptions({ region: "us-central1" });
+
+// -----------------------------
+// Config
+// -----------------------------
 const API_KEY =
   process.env.BDL_API_KEY || "829461bf-d03d-43cd-840f-8d44e3f2a8bb";
 const BASE_API = "https://api.balldontlie.io/v1";
 
+// -----------------------------
+// HTTP Request Helper
+// -----------------------------
 function makeRequest(apiUrl, options = {}, retries = 3) {
   return new Promise((resolve, reject) => {
-    const attemptRequest = (retriesLeft) => {
+    const attempt = (left) => {
       const req = https.get(
         apiUrl,
         {
           headers: {
-            Authorization: API_KEY.startsWith("Bearer ") ? API_KEY : API_KEY,
+            Authorization: API_KEY,
             "User-Agent": "DreamTeam/1.0",
             Accept: "application/json",
             ...options.headers,
@@ -22,36 +32,42 @@ function makeRequest(apiUrl, options = {}, retries = 3) {
           let data = "";
           res.on("data", (chunk) => (data += chunk));
           res.on("end", () => {
-            if (res.statusCode === 429 && retriesLeft > 0) {
-              const backoff = 500 * Math.pow(2, 3 - retriesLeft);
-              setTimeout(() => attemptRequest(retriesLeft - 1), backoff);
-              return;
+            if (res.statusCode === 429 && left > 0) {
+              const backoff = 500 * Math.pow(2, 3 - left);
+              return setTimeout(() => attempt(left - 1), backoff);
             }
+
             let parsed = data;
             try {
               parsed = JSON.parse(data);
-            } catch (e) {}
+            } catch {}
+
             resolve({ status: res.statusCode, data: parsed });
           });
         }
       );
+
       req.on("error", (err) => {
-        if (retriesLeft > 0) {
-          setTimeout(() => attemptRequest(retriesLeft - 1), 1000);
-        } else {
-          reject(err);
+        if (left > 0) {
+          return setTimeout(() => attempt(left - 1), 1000);
         }
+        reject(err);
       });
     };
-    attemptRequest(retries);
+
+    attempt(retries);
   });
 }
 
+// -----------------------------
+// Cache system
+// -----------------------------
 const cache = new Map();
+
 function setCache(key, data, ttl = 1000 * 60 * 5) {
-  const expires = Date.now() + ttl;
-  cache.set(key, { data, expires });
+  cache.set(key, { data, expires: Date.now() + ttl });
 }
+
 function getCache(key) {
   const entry = cache.get(key);
   if (!entry) return null;
@@ -62,6 +78,9 @@ function getCache(key) {
   return entry.data;
 }
 
+// -----------------------------
+// JSON Response Helper (CORS)
+// -----------------------------
 function sendJson(res, status, body) {
   res.set("Access-Control-Allow-Origin", "*");
   res.set("Access-Control-Allow-Methods", "GET, OPTIONS");
@@ -69,69 +88,94 @@ function sendJson(res, status, body) {
   res.status(status).json(body);
 }
 
-export const api = functions.https.onRequest(async (req, res) => {
+// -----------------------------
+// MAIN API FUNCTION
+// -----------------------------
+exports.api = onRequest(async (req, res) => {
   if (req.method === "OPTIONS") {
     return sendJson(res, 200, {});
   }
+
   try {
     const pathname = req.path.replace(/^\/+api\/?/, "/");
     const query = req.query || {};
 
+    // -------------------------
+    // /players
+    // -------------------------
     if (pathname === "/players") {
       const teamId = query.team_id || 12;
       const cacheKey = `players:${teamId}`;
+
       const cached = getCache(cacheKey);
-      if (cached) {
-        return sendJson(res, 200, cached);
-      }
+      if (cached) return sendJson(res, 200, cached);
+
       const apiUrl = `${BASE_API}/players?team_ids[]=${teamId}&per_page=100`;
       const result = await makeRequest(apiUrl);
-      if (result && result.status === 200) {
-        try {
-          setCache(cacheKey, result.data, 1000 * 60 * 5);
-        } catch (e) {}
+
+      if (result.status === 200) {
+        setCache(cacheKey, result.data);
       }
+
       return sendJson(res, result.status, result.data);
     }
 
+    // -------------------------
+    // /stats
+    // -------------------------
     if (pathname === "/stats") {
       const season = query.season || 2024;
       const playerIds = query.player_ids
         ? String(query.player_ids).split(",")
         : [];
+
       if (!playerIds.length) {
         return sendJson(res, 400, { error: "No player_ids provided" });
       }
-      await new Promise((resolve) => setTimeout(resolve, 500));
+
       const playerIdParams = playerIds
         .map((id) => `player_ids[]=${id}`)
         .join("&");
-      const apiUrl = `${BASE_API}/season_averages?season=${season}&${playerIdParams}`;
-      const result = await makeRequest(apiUrl);
+
+      const url = `${BASE_API}/season_averages?season=${season}&${playerIdParams}`;
+      const result = await makeRequest(url);
+
       return sendJson(res, result.status, result.data);
     }
 
+    // -------------------------
+    // /daily
+    // -------------------------
     if (pathname === "/daily") {
       const season = query.season || 2024;
       const teamId = query.team_id || 12;
       const todayKey = new Date().toISOString().split("T")[0];
+
       const cacheKey = `daily:${teamId}:${season}:${todayKey}`;
       const forceRefresh = query.refresh === "1" || query.nocache === "1";
+
       const cached = getCache(cacheKey);
       if (cached && !forceRefresh) {
         return sendJson(res, 200, cached);
       }
+
+      // Fetch players
       const playersUrl = `${BASE_API}/players?team_ids[]=${teamId}&per_page=100`;
       const playersResult = await makeRequest(playersUrl);
+
       let players = [];
       let rateLimited = false;
+
       if (playersResult.status === 200) {
         players = playersResult.data.data || [];
       } else if (playersResult.status === 429) {
         rateLimited = true;
+
         if (cached) {
           return sendJson(res, 200, { ...cached, rateLimited });
         }
+
+        // fallback players
         players = [
           {
             id: 1,
@@ -158,6 +202,7 @@ export const api = functions.https.onRequest(async (req, res) => {
             upstreamError: playersResult.status,
           });
         }
+
         players = [
           {
             id: 101,
@@ -192,61 +237,68 @@ export const api = functions.https.onRequest(async (req, res) => {
         ];
       }
 
+      // Stats
       const playerIds = players.map((p) => p.id);
       const idParams = playerIds.map((id) => `player_ids[]=${id}`).join("&");
+
       const statsUrl = `${BASE_API}/season_averages?season=${season}&${idParams}`;
       const statsResult = await makeRequest(statsUrl);
 
-      let fallback = false;
       let merged = [];
+      let fallback = false;
+
       if (statsResult.status === 200 && Array.isArray(statsResult.data.data)) {
         const statsMap = new Map(
           statsResult.data.data.map((s) => [s.player_id, s])
         );
-        merged = players
-          .map((p) => {
-            const stat = statsMap.get(p.id);
-            if (!stat) {
-              return {
-                id: p.id,
-                name: `${p.first_name} ${p.last_name}`,
-                pts: p.position === "G" ? 8.0 : 6.0,
-                ast: p.position === "G" ? 2.0 : 1.0,
-              };
-            }
+
+        merged = players.map((p) => {
+          const stat = statsMap.get(p.id);
+          if (!stat) {
             return {
               id: p.id,
               name: `${p.first_name} ${p.last_name}`,
-              pts: stat.pts || 0,
-              ast: stat.ast || 0,
+              pts: p.position === "G" ? 8 : 6,
+              ast: p.position === "G" ? 2 : 1,
             };
-          })
-          .filter(Boolean);
-      }
-      if (!merged.length) {
-        fallback = true;
-        merged = players.slice(0, 12).map((p) => {
-          let pts = 10 + Math.random() * 12;
-          let ast =
-            p.position === "G" ? 3 + Math.random() * 5 : 1 + Math.random() * 3;
+          }
+
           return {
             id: p.id,
             name: `${p.first_name} ${p.last_name}`,
-            pts: parseFloat(pts.toFixed(1)),
-            ast: parseFloat(ast.toFixed(1)),
+            pts: stat.pts || 0,
+            ast: stat.ast || 0,
           };
         });
       }
 
+      if (!merged.length) {
+        fallback = true;
+
+        merged = players.slice(0, 12).map((p) => ({
+          id: p.id,
+          name: `${p.first_name} ${p.last_name}`,
+          pts: Number((10 + Math.random() * 12).toFixed(1)),
+          ast: Number(
+            (
+              (p.position === "G" ? 3 : 1) +
+              Math.random() * (p.position === "G" ? 5 : 3)
+            ).toFixed(1)
+          ),
+        }));
+      }
+
       const sorted = merged.sort((a, b) => b.pts - a.pts);
-      function sample(arr, n) {
+
+      const sample = (arr, n) => {
         const copy = [...arr];
         for (let i = copy.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           [copy[i], copy[j]] = [copy[j], copy[i]];
         }
         return copy.slice(0, n);
-      }
+      };
+
       let pool;
       let goalPoints;
       let goalAssists;
@@ -259,16 +311,18 @@ export const api = functions.https.onRequest(async (req, res) => {
         pool = sorted.slice(0, 12);
         const totalPoints = pool.reduce((s, p) => s + p.pts, 0);
         const totalAssists = pool.reduce((s, p) => s + p.ast, 0);
+
         goalPoints = Math.max(1, Math.round(totalPoints * 0.9));
         goalAssists = Math.max(1, Math.round(totalAssists * 0.9));
       }
 
-      function ensureInPool(name) {
+      const ensureInPool = (name) => {
         const idx = sorted.findIndex((p) => p.name.toLowerCase() === name);
         if (idx !== -1 && !pool.some((p) => p.name.toLowerCase() === name)) {
           pool.push(sorted[idx]);
         }
-      }
+      };
+
       ensureInPool("tyrese haliburton");
       ensureInPool("andrew nembhard");
       ensureInPool("pascal siakam");
@@ -285,7 +339,10 @@ export const api = functions.https.onRequest(async (req, res) => {
         fallback,
         refreshed: forceRefresh,
         goalsLocked: !!(forceRefresh && cached),
-        goals: { points: goalPoints, assists: goalAssists },
+        goals: {
+          points: goalPoints,
+          assists: goalAssists,
+        },
         players: pool.map((p) => ({
           id: p.id,
           name: p.name,
@@ -294,10 +351,15 @@ export const api = functions.https.onRequest(async (req, res) => {
         })),
         rateLimited,
       };
-      if (!forceRefresh) setCache(cacheKey, payload, 1000 * 60 * 10);
+
+      if (!forceRefresh) {
+        setCache(cacheKey, payload, 1000 * 60 * 10);
+      }
+
       return sendJson(res, 200, payload);
     }
 
+    // No match
     return sendJson(res, 404, { error: "Route not found" });
   } catch (err) {
     return sendJson(res, 500, { error: err?.message || String(err) });

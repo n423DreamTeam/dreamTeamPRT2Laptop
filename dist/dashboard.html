@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DreamTeam | Dashboard</title>
+    <link rel="icon" type="image/x-icon" href="/assets/favicon-CWIExPQd.ico" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/assets/favicon-32x32-ByphiF9W.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="/assets/favicon-16x16-CApdf2pc.png"
+    />
+    <!-- Vite injects styles from main.js -->
+    <script type="module" crossorigin src="/assets/dashboard-B5J0LYdu.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/main-Dz9wZmOr.js">
+    <link rel="stylesheet" crossorigin href="/assets/main-QhOidyLn.css">
+  </head>
+  <body class="dashboard-body">
+    <header class="navbar">
+      <a style="text-decoration: none" href="/dashboard.html">
+        <div class="logo">DREAMTEAM</div>
+      </a>
+      <div class="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <nav>
+        <a href="#puzzle">Challenge</a>
+        <span>|</span>
+        <a href="/leadboard.html">Leaderboard</a>
+        <span>|</span>
+        <a href="/chat.html">Chat</a>
+        <span>|</span>
+        <a href="/rewards.html">Rewards</a>
+        <span>|</span>
+        <a href="/players.html">Players</a>
+        <a
+          href="/account.html"
+          title="Account"
+          style="margin-left: 1rem; display: inline-flex; align-items: center"
+        >
+          <svg
+            width="28"
+            height="28"
+            viewBox="0 0 24 24"
+            fill="none"
+            style="vertical-align: middle"
+          >
+            <circle cx="12" cy="8" r="4" fill="#ffcb05" />
+            <path
+              d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6"
+              stroke="#ffcb05"
+              stroke-width="2"
+              fill="none"
+            />
+          </svg>
+        </a>
+      </nav>
+    </header>
+
+    <main class="dashboard-main">
+      <section class="welcome-section">
+        <h1>Welcome, <span id="username">Pacers Fan!</span></h1>
+        <a href="#puzzle">
+          <div class="daily">
+            <p>
+              Daily Challenge :
+              <strong id="challenge-date"></strong>
+            </p>
+          </div>
+        </a>
+      </section>
+
+      <section id="board">
+        <div class="banner floating">
+          <div class="slider css-auto-spin" style="--quantity: 12">
+            <div class="item" style="--position: 1">
+              <img src="/assets/HaliCutout-B72_HMVq.jpg" alt="Tyrese Haliburton" />
+            </div>
+            <div class="item" style="--position: 2">
+              <img src="/assets/NEMBY-BWSlXNpy.png" alt="Andrew Nembhard" />
+            </div>
+            <div class="item" style="--position: 3">
+              <img src="/assets/siakamCutout-0rEfeG9h.png" alt="pascal siakam" />
+            </div>
+            <div class="item" style="--position: 4">
+              <img
+                src="/assets/neismithCutout-DYVPuzzV.png"
+                alt="Aaron Neismith"
+                style="--position: 4"
+              />
+            </div>
+            <div class="item" style="--position: 5">
+              <img src="/assets/JacksonCutout-DV3ZiUFK.jpg" alt="Isaiah Jackson" />
+            </div>
+            <div class="item" style="--position: 6">
+              <img src="/assets/obiCutout-eO2qXXGV.png" alt="Obi Toppin" />
+            </div>
+            <div class="item" style="--position: 7">
+              <img src="/assets/TJCutout-D19OlKvs.jpg" alt="TJ MCCONNELL" />
+            </div>
+            <div class="item" style="--position: 8">
+              <img
+                src="/assets/mathurinCutout-BEtBX2UY.png"
+                alt="Bennedict Mathurin"
+              />
+            </div>
+            <div class="item" style="--position: 9">
+              <img src="/assets/HuffCutout-XLL6DUw9.jpg" alt="Jay Huff" />
+            </div>
+            <div class="item" style="--position: 10">
+              <img src="/assets/shepCutout-DrjqCfWj.png" alt="Ben Sheppard" />
+            </div>
+            <div class="item" style="--position: 11">
+              <img src="/assets/jaraceCutout-K6_-G4Xp.png" alt="Jarace Walker" />
+            </div>
+            <div class="item" style="--position: 12">
+              <img src="/assets/fruphCutout-CpUkEcKq.png" alt="Johnny Furphy" />
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="puzzle-section" id="puzzle">
+        <h2>STAT-MATCH PUZZLE</h2>
+        <p class="subtitle">
+          Drag and drop players to meet statistical thresholds.
+        </p>
+
+        <div class="puzzle-objective">
+          <h3>Puzzle Objective Today:</h3>
+          <p>
+            Achieve a total team score of
+            <span class="highlight">150 points</span> and
+            <span class="highlight">50 assists</span> using any 5 players.
+          </p>
+        </div>
+
+        <div class="puzzle-layout">
+          <div class="drop-zone" id="drop-zone">
+            <p>
+              <strong>BUILD YOUR DREAMTEAM</strong><br />Drag & Drop players
+              into this area
+            </p>
+          </div>
+
+          <div class="players-list">
+            <h3>Players</h3>
+            <div class="players">
+              <div class="player" draggable="true">TYRESE HALIBURTON</div>
+              <div class="player" draggable="true">ANDREW NEMBHARD</div>
+              <div class="player" draggable="true">REGGIE MILLER</div>
+              <div class="player" draggable="true">LANCE STEVENSON</div>
+              <div class="player" draggable="true">TJ MCCONNELL</div>
+              <div class="player" draggable="true">PAUL GEORGE</div>
+              <div class="player" draggable="true">VICTOR OLADIPO</div>
+            </div>
+
+            <button id="refresh-btn" class="btn refresh">🔁 Refresh</button>
+          </div>
+        </div>
+
+        <!-- Feedback bars -->
+        <div class="feedback">
+          <div class="feedback-item">
+            <h4>Points</h4>
+            <div class="progress">
+              <div id="points-bar" style="width: 0%"></div>
+            </div>
+            <p><span id="points-val">0</span> / 150</p>
+          </div>
+          <div class="feedback-item">
+            <h4>Assists</h4>
+            <div class="progress">
+              <div id="assists-bar" style="width: 0%"></div>
+            </div>
+            <p><span id="assists-val">0</span> / 50</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-content">
+        <div class="footer-section footer-brand">
+          <h2 class="brand-name">DREAMTEAM</h2>
+          <p class="tagline">Pacer Fan App</p>
+          <p>
+            Your ultimate companion for Pacers fans. Track stats, join
+            challenges, and connect with fellow fans.
+          </p>
+        </div>
+        <div class="footer-section">
+          <h3>Navigate</h3>
+          <ul>
+            <li><a href="/dashboard.html">Daily Challenge</a></li>
+            <li><a href="/leadboard.html">Leaderboard</a></li>
+            <li><a href="/players.html">Players</a></li>
+            <li><a href="/chat.html">Chat</a></li>
+            <li><a href="/rewards.html">Rewards</a></li>
+            <li><a href="/account.html">Account</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h3>About</h3>
+          <ul>
+            <li class="credit">
+              App made by
+              <a href="https://www.meganpalmquist.com/">Megan Palmquist</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>DREAMTEAM © 2025 — Made by Megan</p>
+      </div>
+    </footer>
+
+  </body>
+</html>

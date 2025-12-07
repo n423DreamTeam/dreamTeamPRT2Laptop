@@ -1,10 +1,30 @@
-// Sample player data
+import haliImg from "../images/hali.avif";
+import siakamImg from "../images/siakam.png";
+import drewImg from "../images/drew.webp";
+import neismithImg from "../images/neismith.png";
+import mathurinImg from "../images/mathurin.avif";
+import tjImg from "../images/tj.webp";
+import huffImg from "../images/huff.avif";
+import obiImg from "../images/obi.webp";
+import shepImg from "../images/shep.webp";
+import jaraceImg from "../images/jarace.avif";
+import jacksonImg from "../images/jackson.png";
+import furphImg from "../images/furph.avif";
+import peterImg from "../images/peter.avif";
+import kamImg from "../images/kam.png";
+import bradleyImg from "../images/bradley.webp";
+import jreImg from "../images/jre.png";
+import quentonImg from "../images/quenton.avif";
+import ethanImg from "../images/ethan.webp";
+import pacersLogo from "../images/pacerslogo.png";
+import reggieAndSiakam from "../images/reggieandsiakam.png";
+
 const players = [
   {
     id: "tyrese-haliburton",
     name: "Tyrese Haliburton",
     number: 0,
-    image: "images/hali.avif",
+    image: haliImg,
     position: "Point Guard",
     stats: {
       points: 20.1,
@@ -22,13 +42,13 @@ const players = [
     draft: "2020: 1st Rd. 12th",
     experience: "3 years",
     achievements: ["NBA All-Star [2024]", "NBA All-Rookie First Team [2021]"],
-    logo: "images/pacerslogo.png",
+    logo: pacersLogo,
   },
   {
     id: "pascal-siakam",
     name: "Pascal Siakam",
     number: 43,
-    image: "images/siakam.png",
+    image: siakamImg,
     position: "Forward",
     stats: {
       points: 21.3,
@@ -46,13 +66,13 @@ const players = [
     draft: "2016: 1st Rd. 27th",
     experience: "8 years",
     achievements: ["NBA Champion [2019]", "2x NBA All-Star"],
-    logo: "images/reggieandsiakam.png",
+    logo: reggieAndSiakam,
   },
   {
     id: "andrew-nembhard",
     name: "Andrew Nembhard",
     number: 2,
-    image: "images/drew.webp",
+    image: drewImg,
     position: "Point Guard",
     stats: {
       points: 9.2,
@@ -73,13 +93,13 @@ const players = [
       "NBA All-Rookie Second Team [2023]",
       "WCC Sixth Man of the Year",
     ],
-    logo: "images/pacerslogo.png",
+    logo: pacersLogo,
   },
   {
     id: "aaron-nesmith",
     name: "Aaron Nesmith",
     number: 23,
-    image: "images/neismith.png",
+    image: neismithImg,
     position: "Guard",
     stats: {
       points: 12.2,
@@ -97,13 +117,13 @@ const players = [
     draft: "2020: 1st Rd. 14th",
     experience: "4 years",
     achievements: ["SEC Freshman of the Year [2019]"],
-    logo: "images/pacerslogo.png",
+    logo: pacersLogo,
   },
   {
     id: "benedict-mathurin",
     name: "Benedict Mathurin",
     number: "00",
-    image: "images/mathurin.avif",
+    image: mathurinImg,
     position: "Guard",
     stats: {
       points: 14.5,
@@ -124,13 +144,13 @@ const players = [
       "NBA All-Rookie Second Team [2023]",
       "Pac-12 Player of the Year [2022]",
     ],
-    logo: "images/pacerslogo.png",
+    logo: pacersLogo,
   },
   {
     id: "tj-mcconnell",
     name: "T.J. McConnell",
     number: 9,
-    image: "images/tj.webp",
+    image: tjImg,
     position: "Guard",
     stats: {
       points: 9.8,
@@ -148,13 +168,13 @@ const players = [
     draft: "Undrafted",
     experience: "10 years",
     achievements: ["NBA Hustle Award [2021]"],
-    logo: "images/pacerslogo.png",
+    logo: pacersLogo,
   },
   {
     id: "jay-huff",
     name: "Jay Huff",
     number: 32,
-    image: "images/huff.avif",
+    image: huffImg,
     position: "Center",
     stats: {
       points: 7.8,
@@ -173,13 +193,13 @@ const players = [
     draft: "Undrafted",
     experience: "4 years",
     achievements: ["ACC Defensive Player of the Year [2021]"],
-    logo: "images/pacerslogo.png",
+    logo: pacersLogo,
   },
   {
     id: "obi-toppin",
     name: "Obi Toppin",
     number: 1,
-    image: "images/obi.webp",
+    image: obiImg,
     position: "Forward",
     stats: {
       points: 10.3,
@@ -197,13 +217,13 @@ const players = [
     draft: "2020: 1st Rd. 8th",
     experience: "4 years",
     achievements: ["Naismith College Player of the Year [2020]"],
-    logo: "images/pacerslogo.png",
+    logo: pacersLogo,
   },
   {
     id: "ben-sheppard",
     name: "Ben Sheppard",
     number: 26,
-    image: "images/shep.webp",
+    image: shepImg,
     position: "Guard",
     stats: {
       points: 5.1,
@@ -221,13 +241,13 @@ const players = [
     draft: "2023: 2nd Rd. 26th",
     experience: "1 year",
     achievements: ["Ohio Valley Conference Player of the Year [2023]"],
-    logo: "images/pacerslogo.png",
+    logo: pacersLogo,
   },
   {
     id: "jarace-walker",
     name: "Jarace Walker",
     number: 5,
-    image: "images/jarace.avif",
+    image: jaraceImg,
     position: "Forward",
     stats: {
       points: 3.8,
@@ -245,13 +265,13 @@ const players = [
     draft: "2023: 1st Rd. 8th",
     experience: "1 year",
     achievements: ["AAC All-Rookie Team [2023]"],
-    logo: "images/pacerslogo.png",
+    logo: pacersLogo,
   },
   {
     id: "isaiah-jackson",
     name: "Isaiah Jackson",
     number: 22,
-    image: "images/jackson.png",
+    image: jacksonImg,
     position: "Forward",
     stats: {
       points: 8.2,
@@ -270,13 +290,13 @@ const players = [
     draft: "2021: 1st Rd. 22nd",
     experience: "4 years",
     achievements: ["SEC All-Freshman Team [2021]"],
-    logo: "images/pacerslogo.png",
+    logo: pacersLogo,
   },
   {
     id: "johnny-furphy",
     name: "Johnny Furphy",
     number: 12,
-    image: "images/furph.avif",
+    image: furphImg,
     position: "Forward",
     stats: {
       points: 2.5,
@@ -294,13 +314,13 @@ const players = [
     draft: "2024: 2nd Rd. 35th",
     experience: "Rookie",
     achievements: ["Big 12 All-Freshman Team [2024]"],
-    logo: "images/pacerslogo.png",
+    logo: pacersLogo,
   },
   {
     id: "taelon-peter",
     name: "Taelon Peter",
     number: 4,
-    image: "images/peter.avif",
+    image: peterImg,
     position: "Guard",
     stats: {
       points: 1.8,
@@ -318,13 +338,13 @@ const players = [
     draft: "Undrafted",
     experience: "Rookie",
     achievements: ["Southern Conference Player of the Year [2024]"],
-    logo: "images/pacerslogo.png",
+    logo: pacersLogo,
   },
   {
     id: "kam-jones",
     name: "Kam Jones",
     number: 7,
-    image: "images/kam.png",
+    image: kamImg,
     position: "Guard",
     stats: {
       points: 0.0,
@@ -342,13 +362,13 @@ const players = [
     draft: "2024: 2nd Rd. 49th",
     experience: "Rookie",
     achievements: ["Big East Player of the Year [2024]"],
-    logo: "images/pacerslogo.png",
+    logo: pacersLogo,
   },
   {
     id: "tony-bradley",
     name: "Tony Bradley",
     number: 13,
-    image: "images/bradley.webp",
+    image: bradleyImg,
     position: "Center",
     stats: {
       points: 4.9,
@@ -367,13 +387,13 @@ const players = [
     draft: "2017: 1st Rd. 28th",
     experience: "7 years",
     achievements: ["NCAA Champion [2017]"],
-    logo: "images/pacerslogo.png",
+    logo: pacersLogo,
   },
   {
     id: "jeremiah-robinson-earl",
     name: "Jeremiah Robinson-Earl",
     number: 25,
-    image: "images/jre.png",
+    image: jreImg,
     position: "Forward",
     stats: {
       points: 4.8,
@@ -391,13 +411,13 @@ const players = [
     draft: "2021: 2nd Rd. 32nd",
     experience: "4 years",
     achievements: ["NCAA Champion [2018]"],
-    logo: "images/pacerslogo.png",
+    logo: pacersLogo,
   },
   {
     id: "quenton-jackson",
     name: "Quenton Jackson",
     number: 29,
-    image: "images/Quenton.avif",
+    image: quentonImg,
     position: "Guard",
     stats: {
       points: 11.8,
@@ -415,13 +435,13 @@ const players = [
     draft: "Undrafted",
     experience: "3 years",
     achievements: ["SEC Sixth Man of the Year [2022]"],
-    logo: "images/pacerslogo.png",
+    logo: pacersLogo,
   },
   {
     id: "ethan-thompson",
     name: "Ethan Thompson",
     number: 55,
-    image: "images/ethan.webp",
+    image: ethanImg,
     position: "Guard",
     stats: {
       points: 2.0,
@@ -439,7 +459,7 @@ const players = [
     draft: "Undrafted",
     experience: "Rookie",
     achievements: ["All-Pac-12 First Team [2021]"],
-    logo: "images/pacerslogo.png",
+    logo: pacersLogo,
   },
 ];
 

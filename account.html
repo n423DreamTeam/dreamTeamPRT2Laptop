@@ -4,7 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>My Account - Dream Team</title>
-    <link rel="stylesheet" href="./css/styles.css" />
+    <link rel="icon" href="/src/images/favicon.ico" />
+    <!-- Vite injects styles from main.js -->
   </head>
   <body class="account-body">
     <!-- Navbar -->
@@ -18,15 +19,15 @@
       <nav>
         <a href="#puzzle">Challenge</a>
         <span>|</span>
-        <a href="./leadboard.html">Leaderboard</a>
+        <a href="/leadboard.html">Leaderboard</a>
         <span>|</span>
-        <a href="./chat.html">Chat</a>
+        <a href="/chat.html">Chat</a>
         <span>|</span>
-        <a href="./rewards.html">Rewards</a>
+        <a href="/rewards.html">Rewards</a>
         <span>|</span>
-        <a href="./players.html">Players</a>
+        <a href="/players.html">Players</a>
         <a
-          href="./account.html"
+          href="/account.html"
           title="Account"
           style="margin-left: 1rem; display: inline-flex; align-items: center"
         >
@@ -349,7 +350,8 @@
     <!-- Toast notifications -->
     <div id="toast-root" aria-live="polite" aria-atomic="true"></div>
 
-    <script type="module" src="./js/nav.js" defer></script>
-    <script type="module" src="./js/account.js?v=1764641700000"></script>
+    <script type="module" src="/src/main.js" defer></script>
+    <script type="module" src="/src/js/nav.js" defer></script>
+    <script type="module" src="/src/js/account.js" defer></script>
   </body>
 </html>

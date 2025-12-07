@@ -7,7 +7,7 @@ body.signup-body {
   margin: 0;
   font-family: $font-primary;
   background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
-    url("/dist/assets/images/background.jpeg") no-repeat center/cover;
+    url("/src/images/background.jpeg") no-repeat center/cover;
   color: $text-light;
   overflow: hidden;
   position: relative;
@@ -24,7 +24,7 @@ body.signup-body {
   position: relative;
 
   h1 {
-    font-size: 2.8rem;
+    font-size: 3.5rem;
     color: $text-light;
     letter-spacing: 2px;
     margin-bottom: 2rem;
@@ -59,7 +59,7 @@ body.signup-body {
     }
 
     .btn.primary {
-      //@include gradient-bg($primary-color, darken($primary-color, 15%));
+      background-color: #fdb927;
       border: none;
       border-radius: 8px;
       color: white;
@@ -84,7 +84,7 @@ body.signup-body {
     top: 1.2rem;
     left: 1.2rem;
     text-decoration: none;
-    font-size: 1.5rem;
+    font-size: 3rem;
     color: white;
     transition: 0.3s;
 

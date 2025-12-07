@@ -72,7 +72,8 @@ p {
   }
 }
 @keyframes pulseGlow {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 20px rgba(255, 203, 5, 0.3);
   }
   50% {
@@ -88,7 +89,8 @@ p {
   }
 }
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px);
   }
   50% {
@@ -116,7 +118,8 @@ p {
   }
 }
 @keyframes bounceSubtle {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -175,7 +178,9 @@ p {
 }
 
 * {
-  transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+  transition: color 0.3s ease, background-color 0.3s ease,
+    border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease,
+    opacity 0.3s ease;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -203,7 +208,12 @@ p {
 }
 
 .footer {
-  background: radial-gradient(1200px 400px at 80% -20%, rgba(255, 203, 5, 0.08), transparent 60%), linear-gradient(180deg, #121212 0%, #1b1b1b 100%);
+  background: radial-gradient(
+      1200px 400px at 80% -20%,
+      rgba(255, 203, 5, 0.08),
+      transparent 60%
+    ),
+    linear-gradient(180deg, #121212 0%, #1b1b1b 100%);
   border-top: 2px solid rgba(255, 203, 5, 0.2);
   padding: 3rem 2rem 1.5rem;
   color: rgba(255, 255, 255, 0.85);
@@ -217,7 +227,12 @@ p {
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, transparent 0%, #ffd166 50%, transparent 100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    #ffd166 50%,
+    transparent 100%
+  );
 }
 .footer .footer-content {
   max-width: 1400px;
@@ -339,7 +354,8 @@ p {
   letter-spacing: 0.2px;
   padding: 0.45rem 0.75rem;
   width: 350px;
-  box-shadow: 0 6px 22px rgba(255, 203, 5, 0.25), inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 22px rgba(255, 203, 5, 0.25),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.1);
 }
 .footer .credit::before {
   content: "★";
@@ -387,7 +403,12 @@ p {
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, transparent 0%, #ffd166 50%, transparent 100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    #ffd166 50%,
+    transparent 100%
+  );
 }
 .navbar .logo {
   font-family: "DreamTeam", "Bebas Neue", sans-serif;
@@ -507,13 +528,16 @@ body.landing-body {
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  height: 100vh;
+  min-height: 100vh;
   margin: 0;
   font-family: "DreamTeam", "Bebas Neue", sans-serif;
-  background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url("/src/images/background.jpeg") no-repeat center/cover;
+  background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+    url("/src/images/background.jpeg") no-repeat center/cover;
   color: #ffffff;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   position: relative;
+  padding: 1rem 0;
 }
 body.landing-body::before {
   content: "";
@@ -531,11 +555,14 @@ body.landing-body::before {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  width: 100%;
+  max-width: 900px;
+  padding: 0 1rem;
 }
 .landing-container .reggieSiakam {
-  max-width: 90%;
+  max-width: 100%;
   background-image: url(/src/images/reggieandsiakam.png);
-  background-size: cover;
+  background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
   height: 400px;
@@ -547,8 +574,10 @@ body.landing-body::before {
   padding: 2rem 3rem;
   border-radius: 1.5rem;
   box-shadow: 0 0 30px rgba(0, 0, 0, 0.4);
-  width: 830px;
-  height: 372px;
+  width: 100%;
+  max-width: 830px;
+  height: auto;
+  min-height: 372px;
   margin-top: -10px;
   z-index: 1;
   text-align: center;
@@ -599,7 +628,8 @@ body.landing-body::before {
 }
 
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -612,7 +642,8 @@ body.landing-body::before {
   align-items: center;
   height: 100vh;
   margin: 0;
-  background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url("../images/background.jpeg") no-repeat center/cover;
+  background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+    url("../images/background.jpeg") no-repeat center/cover;
   color: #ffffff;
   background-color: #232232;
   font-family: "DreamTeam", "Bebas Neue", sans-serif;
@@ -685,6 +716,161 @@ body.landing-body::before {
 .login-container form .btn.primary:hover {
   transform: scale(1.05);
   box-shadow: 0 0 20px rgba(30, 63, 255, 0.9);
+}
+.signup-container .back-btn {
+  position: absolute;
+  top: 1.2rem;
+  left: 1.2rem;
+  text-decoration: none;
+  font-size: 2.5rem;
+  color: white;
+  transition: 0.3s;
+}
+.signup-container .back-btn:hover {
+  transform: scale(1.15);
+}
+
+/* === Landing/Login/Signup responsive tweaks === */
+@media (max-width: 900px) {
+  body.landing-body {
+    padding: 0.5rem 0.5rem;
+  }
+  .landing-container {
+    padding: 0 0.5rem;
+  }
+  .landing-container .reggieSiakam {
+    height: 180px;
+  }
+  .landing-container .landing-content {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    min-height: auto;
+    padding: 1.25rem 1rem;
+    margin-top: -8px;
+  }
+  .landing-container .landing-content h2 {
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+    margin-bottom: 0.3rem;
+  }
+  .landing-container .landing-content h1 {
+    font-size: 2.2rem;
+    margin-bottom: 1rem;
+  }
+  .landing-container .landing-content .landing-buttons {
+    gap: 0.85rem;
+  }
+  .landing-container .landing-content .landing-buttons .btn {
+    font-size: 1rem;
+    width: 100%;
+    padding: 0.7rem 1rem;
+  }
+
+  .login-body,
+  .signup-body {
+    padding: 1.5rem 1rem;
+    height: auto;
+    min-height: 100vh;
+  }
+  .login-container,
+  .signup-container {
+    width: 100%;
+    max-width: 460px;
+    padding: 2.25rem 1.75rem;
+  }
+  .login-container h1 {
+    font-size: 3.4rem;
+  }
+  .login-container form label {
+    font-size: 1.05rem;
+  }
+  .login-container form input,
+  .signup-container form input {
+    font-size: 1rem;
+  }
+  .login-container form .btn.primary,
+  .signup-container form .btn.primary {
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  body.landing-body {
+    padding: 0.5rem 0.4rem;
+  }
+  .landing-container {
+    padding: 0 0.4rem;
+  }
+  .landing-container .reggieSiakam {
+    height: 140px;
+  }
+  .landing-container .landing-content {
+    padding: 1rem 0.9rem;
+  }
+  .landing-container .landing-content h2 {
+    font-size: 0.95rem;
+    letter-spacing: 0.5px;
+  }
+  .landing-container .landing-content h1 {
+    font-size: 1.85rem;
+    margin-bottom: 0.85rem;
+  }
+  .landing-container .landing-content .landing-buttons {
+    gap: 0.75rem;
+  }
+  .landing-container .landing-content .landing-buttons .btn {
+    font-size: 0.95rem;
+    padding: 0.65rem 0.9rem;
+  }
+
+  .login-container,
+  .signup-container {
+    padding: 2rem 1.5rem;
+  }
+  .login-container h1 {
+    font-size: 2.8rem;
+  }
+  .login-container form label {
+    font-size: 0.95rem;
+  }
+  .login-container .back-btn,
+  .signup-container .back-btn {
+    font-size: 2.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  body.landing-body {
+    padding: 0.4rem 0.35rem 0.75rem;
+  }
+  .landing-container {
+    padding: 0 0.35rem;
+  }
+  .landing-container .reggieSiakam {
+    height: 120px;
+  }
+  .landing-container .landing-content {
+    padding: 0.85rem 0.75rem;
+    border-radius: 1rem;
+    max-width: 100%;
+  }
+  .landing-container .landing-content h2 {
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.25rem;
+  }
+  .landing-container .landing-content h1 {
+    font-size: 1.65rem;
+    margin-bottom: 0.75rem;
+  }
+  .landing-container .landing-content .landing-buttons {
+    gap: 0.65rem;
+  }
+  .landing-container .landing-content .landing-buttons .btn {
+    font-size: 0.9rem;
+    padding: 0.6rem 0.85rem;
+  }
 }
 .login-container .back-btn {
   position: absolute;
@@ -804,7 +990,8 @@ body.signup-body {
   height: 100vh;
   margin: 0;
   font-family: "DreamTeam", "Bebas Neue", sans-serif;
-  background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url("/dist/assets/images/background.jpeg") no-repeat center/cover;
+  background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+    url("/dist/assets/images/background.jpeg") no-repeat center/cover;
   color: #ffffff;
   overflow: hidden;
   position: relative;
@@ -907,7 +1094,8 @@ html {
   }
 }
 body.dashboard-body {
-  background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url("/src/images/background.jpeg") no-repeat top/cover;
+  background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+    url("/src/images/background.jpeg") no-repeat top/cover;
   background-color: rgb(10, 15, 45);
   color: white;
   font-family: "Open Sans", sans-serif;
@@ -927,7 +1115,8 @@ body.dashboard-body {
   }
 }
 body.dashboard-body body.dashboard-body {
-  background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url("/src/images/background.jpeg") no-repeat top/cover;
+  background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+    url("/src/images/background.jpeg") no-repeat top/cover;
   background-color: rgb(10, 15, 45);
   color: #ffffff;
   font-family: "Open Sans", sans-serif;
@@ -1079,7 +1268,8 @@ body.dashboard-body .banner .slider {
 body.dashboard-body .banner .slider .item {
   position: absolute;
   inset: 0;
-  transform: rotateY(calc((var(--position) - 1) * 360deg / var(--quantity))) translateZ(1000px);
+  transform: rotateY(calc((var(--position) - 1) * 360deg / var(--quantity)))
+    translateZ(1000px);
 }
 body.dashboard-body .banner .slider .item img {
   width: 100%;
@@ -1200,7 +1390,8 @@ body.dashboard-body p .highlight {
   gap: 0.8rem;
   flex-wrap: wrap;
 }
-.puzzle-layout .drop-zone:hover, .puzzle-layout .drop-zone.drag-over {
+.puzzle-layout .drop-zone:hover,
+.puzzle-layout .drop-zone.drag-over {
   border-color: #ffcb05;
   box-shadow: 0 0 25px rgba(255, 203, 5, 0.5);
   background: rgba(255, 255, 255, 0.08);
@@ -1332,7 +1523,11 @@ body.dashboard-body p .highlight {
   box-shadow: 0 0 15px rgba(91, 127, 255, 0.5);
 }
 .puzzle-layout .players-list .player.locked {
-  background: linear-gradient(90deg, rgba(50, 50, 50, 0.6), rgba(30, 30, 30, 0.6));
+  background: linear-gradient(
+    90deg,
+    rgba(50, 50, 50, 0.6),
+    rgba(30, 30, 30, 0.6)
+  );
   border: 1px dashed rgba(255, 255, 255, 0.06);
   color: rgba(255, 255, 255, 0.5);
   cursor: default;
@@ -1453,7 +1648,16 @@ body.leaderboard-body::before {
   left: 0;
   right: 0;
   bottom: 0;
-  background: radial-gradient(circle at 20% 30%, rgba(255, 203, 5, 0.15) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(91, 127, 255, 0.15) 0%, transparent 50%);
+  background: radial-gradient(
+      circle at 20% 30%,
+      rgba(255, 203, 5, 0.15) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 80% 70%,
+      rgba(91, 127, 255, 0.15) 0%,
+      transparent 50%
+    );
   pointer-events: none;
   z-index: 0;
 }
@@ -1547,7 +1751,12 @@ body.leaderboard-body::before {
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, transparent 0%, #ffd166 50%, transparent 100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    #ffd166 50%,
+    transparent 100%
+  );
 }
 .leaderboard-list h2 {
   font-family: "DreamTeam", "Bebas Neue", sans-serif;
@@ -1564,7 +1773,11 @@ body.leaderboard-body::before {
   margin: 0;
 }
 .leaderboard-list ul li {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
   border: 2px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
   padding: 1.25rem 1.5rem;
@@ -1588,7 +1801,11 @@ body.leaderboard-body::before {
   transition: opacity 0.3s ease;
 }
 .leaderboard-list ul li:hover {
-  background: linear-gradient(135deg, rgba(255, 203, 5, 0.1) 0%, rgba(91, 127, 255, 0.1) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 203, 5, 0.1) 0%,
+    rgba(91, 127, 255, 0.1) 100%
+  );
   border-color: rgba(255, 203, 5, 0.4);
   transform: translateX(8px);
   box-shadow: 0 8px 30px rgba(255, 203, 5, 0.2);
@@ -1597,7 +1814,11 @@ body.leaderboard-body::before {
   opacity: 1;
 }
 .leaderboard-list ul li:nth-child(1) {
-  background: linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 203, 5, 0.05) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 215, 0, 0.15) 0%,
+    rgba(255, 203, 5, 0.05) 100%
+  );
   border-color: rgba(255, 215, 0, 0.4);
 }
 .leaderboard-list ul li:nth-child(1) .rank {
@@ -1614,7 +1835,11 @@ body.leaderboard-body::before {
   font-size: 1.5rem;
 }
 .leaderboard-list ul li:nth-child(2) {
-  background: linear-gradient(135deg, rgba(192, 192, 192, 0.15) 0%, rgba(192, 192, 192, 0.05) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(192, 192, 192, 0.15) 0%,
+    rgba(192, 192, 192, 0.05) 100%
+  );
   border-color: rgba(192, 192, 192, 0.4);
 }
 .leaderboard-list ul li:nth-child(2) .rank {
@@ -1622,7 +1847,11 @@ body.leaderboard-body::before {
   font-size: 1.6rem;
 }
 .leaderboard-list ul li:nth-child(3) {
-  background: linear-gradient(135deg, rgba(205, 127, 50, 0.15) 0%, rgba(205, 127, 50, 0.05) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(205, 127, 50, 0.15) 0%,
+    rgba(205, 127, 50, 0.05) 100%
+  );
   border-color: rgba(205, 127, 50, 0.4);
 }
 .leaderboard-list ul li:nth-child(3) .rank {
@@ -1653,7 +1882,11 @@ body.leaderboard-body::before {
   width: 55px;
   height: 55px;
   border-radius: 50%;
-  background: linear-gradient(135deg, rgba(255, 203, 5, 0.2), rgba(91, 127, 255, 0.2));
+  background: linear-gradient(
+    135deg,
+    rgba(255, 203, 5, 0.2),
+    rgba(91, 127, 255, 0.2)
+  );
   border: 3px solid #ffcb05;
   display: flex;
   justify-content: center;
@@ -1746,7 +1979,16 @@ body.chat-body::before {
   left: 0;
   right: 0;
   bottom: 0;
-  background: radial-gradient(circle at 20% 30%, rgba(255, 203, 5, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(91, 127, 255, 0.1) 0%, transparent 50%);
+  background: radial-gradient(
+      circle at 20% 30%,
+      rgba(255, 203, 5, 0.1) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 80% 70%,
+      rgba(91, 127, 255, 0.1) 0%,
+      transparent 50%
+    );
   pointer-events: none;
   z-index: 0;
 }
@@ -1841,7 +2083,12 @@ body.chat-body::before {
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, transparent 0%, #ffd166 50%, transparent 100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    #ffd166 50%,
+    transparent 100%
+  );
 }
 .chat-box h2 {
   color: #ffd166;
@@ -1861,7 +2108,11 @@ body.chat-body::before {
   padding-right: 0.5rem;
 }
 .chat-box .message {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
   border: 2px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
   padding: 1rem 1.25rem;
@@ -1885,7 +2136,11 @@ body.chat-body::before {
   transition: opacity 0.3s ease;
 }
 .chat-box .message:hover {
-  background: linear-gradient(135deg, rgba(255, 203, 5, 0.08) 0%, rgba(91, 127, 255, 0.08) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 203, 5, 0.08) 0%,
+    rgba(91, 127, 255, 0.08) 100%
+  );
   border-color: rgba(255, 203, 5, 0.4);
   transform: translateX(8px);
   box-shadow: 0 8px 30px rgba(255, 203, 5, 0.15);
@@ -1894,7 +2149,11 @@ body.chat-body::before {
   opacity: 1;
 }
 .chat-box .message.self {
-  background: linear-gradient(135deg, rgba(255, 203, 5, 0.15) 0%, rgba(255, 203, 5, 0.08) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 203, 5, 0.15) 0%,
+    rgba(255, 203, 5, 0.08) 100%
+  );
   border-color: rgba(255, 203, 5, 0.4);
 }
 .chat-box .message.self::before {
@@ -1911,7 +2170,11 @@ body.chat-body::before {
   min-width: 45px;
   min-height: 45px;
   border-radius: 50%;
-  background: linear-gradient(135deg, rgba(255, 203, 5, 0.2), rgba(91, 127, 255, 0.2));
+  background: linear-gradient(
+    135deg,
+    rgba(255, 203, 5, 0.2),
+    rgba(91, 127, 255, 0.2)
+  );
   border: 2px solid #ffcb05;
   display: flex;
   justify-content: center;
@@ -2183,7 +2446,8 @@ body.rewards-body {
   background-attachment: fixed;
   background-color: #04122e;
   color: #fff;
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
 }
 
 .account-container {
@@ -2238,12 +2502,14 @@ body.rewards-body {
   border-radius: 50%;
   object-fit: cover;
   border: 4px solid #ffd166;
-  box-shadow: 0 0 0 8px rgba(255, 209, 102, 0.1), 0 10px 40px rgba(255, 209, 102, 0.3);
+  box-shadow: 0 0 0 8px rgba(255, 209, 102, 0.1),
+    0 10px 40px rgba(255, 209, 102, 0.3);
   transition: all 0.3s ease;
 }
 .profile-circle img:hover {
   transform: scale(1.05);
-  box-shadow: 0 0 0 8px rgba(255, 209, 102, 0.15), 0 15px 50px rgba(255, 209, 102, 0.4);
+  box-shadow: 0 0 0 8px rgba(255, 209, 102, 0.15),
+    0 15px 50px rgba(255, 209, 102, 0.4);
 }
 
 .photo-edit-btn {
@@ -2305,7 +2571,12 @@ body.rewards-body {
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, transparent 0%, #ffd166 50%, transparent 100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    #ffd166 50%,
+    transparent 100%
+  );
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -2564,7 +2835,12 @@ body.rewards-body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 100%
+  );
   animation: shimmer 2s infinite;
 }
 
@@ -2872,7 +3148,11 @@ body.rewards-body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(180deg, rgba(10, 16, 69, 0.97) 0%, rgba(13, 19, 51, 0.98) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(10, 16, 69, 0.97) 0%,
+    rgba(13, 19, 51, 0.98) 100%
+  );
   backdrop-filter: blur(10px);
   z-index: 1000;
   display: flex;
@@ -3034,7 +3314,13 @@ body.rewards-body {
   font-size: 1rem;
   font-weight: 600;
 }
-.player-modal .modal-content .profile-stats table .profile-achievements ul li::before {
+.player-modal
+  .modal-content
+  .profile-stats
+  table
+  .profile-achievements
+  ul
+  li::before {
   content: "🏆";
   margin-right: 0.75rem;
 }
@@ -3116,7 +3402,11 @@ body.rewards-body {
   align-items: center;
   gap: 3rem;
   margin-bottom: 3rem;
-  background: linear-gradient(145deg, rgba(30, 42, 94, 0.8) 0%, rgba(21, 29, 66, 0.8) 100%);
+  background: linear-gradient(
+    145deg,
+    rgba(30, 42, 94, 0.8) 0%,
+    rgba(21, 29, 66, 0.8) 100%
+  );
   border-radius: 24px;
   padding: 3rem;
   border: 2px solid rgba(253, 185, 39, 0.3);

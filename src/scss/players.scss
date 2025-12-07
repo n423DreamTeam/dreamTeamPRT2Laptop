@@ -12,7 +12,7 @@
   min-height: 100vh;
   padding: 0rem 4rem 4rem 4rem;
   color: #fff;
-  font-family: basketball;
+  font-family: $font-heading;
   position: relative;
   z-index: 0;
 
@@ -23,7 +23,8 @@
     padding-top: 5rem;
     margin-bottom: 2.5rem;
     text-transform: uppercase;
-    font-family: basketball;
+    font-family: $font-heading;
+    padding-top: 200px;
   }
 }
 
@@ -173,7 +174,7 @@
     h2 {
       font-size: 2.2rem;
       font-weight: 900;
-      font-family: basketball;
+      font-family: $font-heading;
       margin: 0 0 0.5rem 0;
       color: #fff;
       text-transform: uppercase;
@@ -324,11 +325,11 @@
           font-weight: 900;
           margin-bottom: 0.5rem;
           color: #fff;
-          font-family: basketball;
+          font-family: $font-heading;
 
           span {
             color: #fdb927;
-            font-family: basketball;
+            font-family: $font-heading;
             margin-left: 0.5rem;
           }
         }
@@ -336,7 +337,7 @@
         h2 {
           font-size: 1.4rem;
           color: #fdb927;
-          font-family: basketball;
+          font-family: $font-heading;
           font-weight: 700;
           text-transform: uppercase;
           letter-spacing: 0.05em;
@@ -357,7 +358,7 @@
         text-transform: uppercase;
         letter-spacing: 0.05em;
         margin-bottom: 1rem;
-        font-family: basketball;
+        font-family: $font-heading;
       }
 
       table {
@@ -463,6 +464,413 @@
   padding: 1rem 2rem;
   text-align: center;
   font-weight: bold;
+}
+
+@media (max-width: 1200px) {
+  .players-main {
+    padding: 0rem 2.5rem 3rem 2.5rem;
+
+    h1 {
+      font-size: 2.8rem;
+      padding-top: 4rem;
+      padding-top: 200px;
+      margin-bottom: 2rem;
+    }
+  }
+
+  .players-filter-bar {
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+
+    input {
+      width: 250px;
+      padding: 0.65rem 1rem;
+      font-size: 0.9rem;
+    }
+
+    select {
+      width: 170px;
+      padding: 0.65rem 1rem;
+      font-size: 0.9rem;
+    }
+
+    .filter-buttons {
+      gap: 0.5rem;
+
+      button {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+      }
+    }
+  }
+
+  .players-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.8rem;
+  }
+
+  .player-card {
+    padding: 1.5rem;
+
+    .player-image {
+      height: 280px;
+    }
+
+    h2 {
+      font-size: 1.3rem;
+      margin: 1rem 0 0.5rem 0;
+    }
+
+    p {
+      font-size: 0.9rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .view-btn {
+      padding: 0.6rem 1.2rem;
+      font-size: 0.9rem;
+    }
+  }
+}
+
+@media (max-width: 900px) {
+  .players-main {
+    padding: 0rem 2rem 2.5rem 2rem;
+
+    h1 {
+      font-size: 2.3rem;
+      padding-top: 80px;
+      margin-bottom: 1.5rem;
+      padding-top: 160px;
+    }
+  }
+
+  .players-filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.8rem;
+    margin-bottom: 2rem;
+
+    input {
+      width: 100%;
+      padding: 0.6rem 0.9rem;
+      font-size: 0.88rem;
+    }
+
+    select {
+      width: 100%;
+      padding: 0.6rem 0.9rem;
+      font-size: 0.88rem;
+    }
+
+    .filter-buttons {
+      gap: 0.4rem;
+      flex-wrap: wrap;
+
+      button {
+        padding: 0.5rem 0.9rem;
+        font-size: 0.8rem;
+        flex: 1;
+        min-width: 80px;
+      }
+    }
+  }
+
+  .players-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+
+  .player-card {
+    padding: 1.2rem;
+
+    .player-image {
+      height: 240px;
+    }
+
+    h2 {
+      font-size: 1.1rem;
+      margin: 0.8rem 0 0.4rem 0;
+    }
+
+    p {
+      font-size: 0.85rem;
+      margin-bottom: 0.7rem;
+    }
+
+    .view-btn {
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+    }
+  }
+
+  .modal-content {
+    .player-details {
+      grid-template-columns: 1fr;
+
+      .player-image-large {
+        max-width: 250px;
+      }
+
+      .profile-info {
+        h1 {
+          font-size: 1.8rem;
+        }
+
+        .profile-stat {
+          font-size: 0.9rem;
+
+          span {
+            font-size: 1.1rem;
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 600px) {
+  .players-main {
+    padding: 0rem 1.2rem 2rem 1.2rem;
+
+    h1 {
+      font-size: 1.8rem;
+      padding-top: 70px;
+      margin-bottom: 1.2rem;
+      padding-top: 180px;
+    }
+  }
+
+  .players-filter-bar {
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-bottom: 1.5rem;
+
+    input {
+      width: 100%;
+      padding: 0.5rem 0.8rem;
+      font-size: 0.85rem;
+    }
+
+    select {
+      width: 100%;
+      padding: 0.5rem 0.8rem;
+      font-size: 0.85rem;
+    }
+
+    .filter-buttons {
+      gap: 0.3rem;
+
+      button {
+        padding: 0.45rem 0.8rem;
+        font-size: 0.75rem;
+        flex: 1;
+      }
+    }
+  }
+
+  .players-grid {
+    grid-template-columns: 1fr;
+    gap: 1.2rem;
+  }
+
+  .player-card {
+    padding: 1rem;
+
+    .player-image {
+      height: 200px;
+    }
+
+    h2 {
+      font-size: 1rem;
+      margin: 0.7rem 0 0.3rem 0;
+    }
+
+    p {
+      font-size: 0.8rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .view-btn {
+      padding: 0.45rem 0.9rem;
+      font-size: 0.8rem;
+    }
+  }
+
+  .modal {
+    .modal-content {
+      padding: 1rem;
+      max-height: 90vh;
+      overflow-y: auto;
+
+      .player-details {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+
+        .player-image-large {
+          max-width: 200px;
+          margin: 0 auto;
+        }
+
+        .profile-info {
+          h1 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+          }
+
+          .profile-stat {
+            font-size: 0.8rem;
+            margin-bottom: 0.6rem;
+
+            span {
+              font-size: 1rem;
+            }
+          }
+
+          .profile-achievements {
+            padding: 1rem;
+
+            h3 {
+              font-size: 1.1rem;
+              margin-bottom: 0.8rem;
+            }
+
+            ul li {
+              margin-bottom: 0.5rem;
+              padding: 0.6rem 0.8rem;
+              font-size: 0.85rem;
+            }
+          }
+
+          .profile-logo {
+            margin-top: 1rem;
+
+            img {
+              width: 100px;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .players-main {
+    padding: 0rem 0.8rem 1.5rem 0.8rem;
+
+    h1 {
+      font-size: 2rem;
+      padding-top: 65px;
+      margin-bottom: 1rem;
+      padding-top: 130px;
+    }
+  }
+
+  .players-filter-bar {
+    gap: 0.5rem;
+    margin-bottom: 1.2rem;
+
+    input {
+      padding: 0.45rem 0.7rem;
+      font-size: 0.8rem;
+    }
+
+    select {
+      padding: 0.45rem 0.7rem;
+      font-size: 0.8rem;
+    }
+
+    .filter-buttons {
+      gap: 0.2rem;
+
+      button {
+        padding: 0.4rem 0.7rem;
+        font-size: 0.7rem;
+      }
+    }
+  }
+
+  .players-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .player-card {
+    padding: 0.8rem;
+
+    .player-image {
+      height: 180px;
+    }
+
+    h2 {
+      font-size: 0.9rem;
+      margin: 0.6rem 0 0.3rem 0;
+    }
+
+    p {
+      font-size: 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .view-btn {
+      padding: 0.4rem 0.8rem;
+      font-size: 0.75rem;
+    }
+  }
+
+  .modal {
+    .modal-content {
+      padding: 0.8rem;
+
+      .player-details {
+        gap: 1.2rem;
+
+        .player-image-large {
+          max-width: 180px;
+        }
+
+        .profile-info {
+          h1 {
+            font-size: 1.3rem;
+            margin-bottom: 0.8rem;
+          }
+
+          .profile-stat {
+            font-size: 0.75rem;
+            margin-bottom: 0.5rem;
+
+            span {
+              font-size: 0.95rem;
+            }
+          }
+
+          .profile-achievements {
+            padding: 0.8rem;
+
+            h3 {
+              font-size: 1rem;
+              margin-bottom: 0.6rem;
+            }
+
+            ul li {
+              margin-bottom: 0.4rem;
+              padding: 0.5rem 0.7rem;
+              font-size: 0.8rem;
+            }
+          }
+
+          .profile-logo {
+            margin-top: 0.8rem;
+
+            img {
+              width: 80px;
+            }
+          }
+        }
+      }
+    }
+  }
 }
 
 @media (max-width: 700px) {
