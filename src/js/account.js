@@ -503,67 +503,23 @@ window.resetProgress = function () {
 function initProfileControls(user) {
   const photoInput = document.getElementById("profile-photo-input");
   const profileImg = document.getElementById("profile-img");
-  const saveBtn = document.getElementById("save-profile-btn");
   const savePhotoBtn = document.getElementById("save-photo-btn");
+  const saveBtn = document.getElementById("save-profile-btn");
   const displayInput = document.getElementById("display-name-input");
   const usernameInput = document.getElementById("username-input");
 
-  let progressEl = null;
-
-  function createProgressBar() {
-    if (progressEl) return progressEl;
-    const container = document.createElement("div");
-    container.className = "upload-progress-container";
-    container.style.position = "relative";
-    container.style.width = "160px";
-    container.style.marginTop = "8px";
-
-    const bar = document.createElement("div");
-    bar.className = "upload-progress-bar";
-    bar.style.width = "0%";
-    bar.style.height = "8px";
-    bar.style.background = "#ffd166";
-    bar.style.borderRadius = "4px";
-    bar.style.transition = "width 200ms linear";
-
-    container.appendChild(bar);
-    if (profileImg && profileImg.parentNode) {
-      profileImg.parentNode.appendChild(container);
-    } else {
-      document.body.appendChild(container);
-    }
-
-    progressEl = { container, bar };
-    return progressEl;
-  }
-
-  function updateProgress(pct) {
-    const el = createProgressBar();
-    el.bar.style.width = Math.min(100, Math.max(0, Math.round(pct))) + "%";
-    if (pct >= 100) {
-      setTimeout(() => {
-        try {
-          el.container.remove();
-        } catch (e) {}
-        progressEl = null;
-      }, 600);
-    }
-  }
-
+  // ---- PHOTO UPLOAD HANDLER ----
   if (photoInput) {
-    photoInput.addEventListener("change", async (e) => {
-      let file = e.target.files && e.target.files[0];
+    photoInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
       if (!file) return;
 
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        if (profileImg) profileImg.src = event.target.result;
-        photoInput.dataset.pendingFile = "true";
-        photoInput._fileToUpload = file;
-        if (savePhotoBtn) savePhotoBtn.style.display = "inline-flex";
-        showToast("Photo ready. Click 'Save Photo' to upload.", "success");
-      };
-      reader.readAsDataURL(file);
+      photoInput._fileToUpload = file;
+      savePhotoBtn.style.display = "inline-block";
+
+      if (profileImg) {
+        profileImg.src = URL.createObjectURL(file);
+      }
     });
   }
 
@@ -576,59 +532,40 @@ function initProfileControls(user) {
 
       try {
         showToast("Saving photo...", "info", 2000);
-        const file = photoInput._fileToUpload;
 
-        const compressedFile = await compressImage(file);
+        const file = photoInput._fileToUpload;
+        const compressed = await compressImage(file);
 
         const uploadFile =
-          compressedFile instanceof Blob
-            ? new File([compressedFile], file.name, {
-                type: compressedFile.type || "image/jpeg",
-              })
-            : compressedFile;
+          compressed instanceof Blob
+            ? new File([compressed], file.name, { type: compressed.type })
+            : file;
 
-        let photoURL;
-        let usedFallback = false;
-
-        console.log("Converting image to base64 (CORS workaround)...");
-        photoURL = await new Promise((resolve, reject) => {
+        // Convert to base64 (works around CORS issues)
+        const base64 = await new Promise((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = (e) => resolve(e.target.result);
           reader.onerror = reject;
           reader.readAsDataURL(uploadFile);
         });
-        usedFallback = true;
 
-        if (profileImg) profileImg.src = photoURL;
+        if (profileImg) profileImg.src = base64;
 
-        if (db) {
-          try {
-            await setDoc(
-              doc(db, "users", user.uid),
-              {
-                photoURL: photoURL,
-                photoType: "base64",
-                updatedAt: serverTimestamp(),
-              },
-              { merge: true }
-            );
-          } catch (firestoreErr) {
-            console.error("Could not update Firestore:", firestoreErr);
-            showToast("Failed to save photo to database.", "error");
-            return;
-          }
-        } else {
-          showToast("Database not available.", "error");
-          return;
-        }
+        await setDoc(
+          doc(db, "users", user.uid),
+          {
+            photoURL: base64,
+            updatedAt: serverTimestamp(),
+          },
+          { merge: true }
+        );
 
         delete photoInput._fileToUpload;
-        delete photoInput.dataset.pendingFile;
         savePhotoBtn.style.display = "none";
 
         showToast("Photo saved successfully!", "success");
       } catch (err) {
-        console.error("Photo save failed:", err);
+        console.error("Photo upload failed:", err);
         showToast(
           "Failed to save photo: " + (err.message || "Unknown error"),
           "error"
@@ -637,78 +574,66 @@ function initProfileControls(user) {
     });
   }
 
+  // ---- SAVE PROFILE BUTTON (name + email + stored username) ----
   if (saveBtn) {
     saveBtn.addEventListener("click", async () => {
-      const newDisplay = displayInput ? displayInput.value.trim() : "";
-      const newUsername = usernameInput ? usernameInput.value.trim() : "";
+      const newDisplay = displayInput?.value.trim() || "";
+      const newUsername = usernameInput?.value.trim() || "";
       const emailInput = document.getElementById("email-input");
-      const newEmail = emailInput ? emailInput.value.trim() : user.email;
+      const newEmail = emailInput?.value.trim() || user.email;
 
       try {
-        await updateProfile(user, {
-          displayName: newDisplay || user.displayName,
-        });
-
+        await updateProfile(user, { displayName: newDisplay });
         await user.reload();
 
         const userData = {
           username: newUsername,
-          displayName: newDisplay || user.displayName,
+          displayName: newDisplay,
           email: user.email,
+          photoURL: user.photoURL || null,
         };
 
-        if (user.photoURL) {
-          userData.photoURL = user.photoURL;
-        }
+        await setDoc(doc(db, "users", user.uid), userData, { merge: true });
 
-        try {
-          if (db) {
-            await setDoc(doc(db, "users", user.uid), userData, { merge: true });
-          } else {
-            throw new Error("Firestore not available");
-          }
-          showToast("Profile updated successfully.", "success");
-        } catch (err) {
-          console.warn("Could not save to Firestore:", err);
-          if (newUsername) localStorage.setItem("dt_username", newUsername);
-          showToast("Profile updated locally (server sync failed).", "warning");
-        }
-
+        document.getElementById("full-name-display").textContent = newDisplay;
         document.getElementById("user-email").textContent = user.email;
-        document.getElementById("full-name-display").textContent =
-          newDisplay || "";
+
+        showToast("Profile updated successfully.", "success");
       } catch (err) {
-        console.error("Error updating profile:", err);
+        console.error("Profile update failed:", err);
         showToast(err.message || "Could not update profile.", "error");
       }
     });
   }
+
+  // ---- CHANGE PASSWORD ----
   const changePassBtn = document.getElementById("change-password-btn");
   if (changePassBtn) {
-    const isPasswordProvider =
-      user.providerData &&
-      user.providerData.some((p) => p.providerId === "password");
-    const currentPassInput = document.getElementById("current-password");
+    const isPasswordProvider = user.providerData.some(
+      (p) => p.providerId === "password"
+    );
+
     if (!isPasswordProvider) {
       changePassBtn.disabled = true;
-      changePassBtn.title = "Password managed by provider; cannot change here.";
-      if (currentPassInput) currentPassInput.disabled = true;
+      changePassBtn.title = "Password managed by provider.";
+      document.getElementById("current-password").disabled = true;
     }
+
     changePassBtn.addEventListener("click", async () => {
       const current = document.getElementById("current-password").value;
       const next = document.getElementById("new-password").value;
       const confirm = document.getElementById("confirm-new-password").value;
 
       if (!current || !next) {
-        showToast("Please fill current and new password fields.", "error");
+        showToast("Please fill out password fields.", "error");
         return;
       }
       if (next.length < 6) {
-        showToast("New password must be at least 6 characters.", "error");
+        showToast("Password must be at least 6 characters.", "error");
         return;
       }
       if (next !== confirm) {
-        showToast("New password and confirmation do not match.", "error");
+        showToast("Passwords do not match.", "error");
         return;
       }
 
@@ -716,27 +641,125 @@ function initProfileControls(user) {
         const credential = EmailAuthProvider.credential(user.email, current);
         await reauthenticateWithCredential(user, credential);
         await updatePassword(user, next);
-        try {
-          await setDoc(
-            doc(db, "users", user.uid),
-            { passwordLastChanged: serverTimestamp() },
-            { merge: true }
-          );
-        } catch (err) {
-          console.warn("Could not record password change time:", err);
-        }
+
+        await setDoc(
+          doc(db, "users", user.uid),
+          { passwordLastChanged: serverTimestamp() },
+          { merge: true }
+        );
+
         showToast("Password changed successfully.", "success");
+
         document.getElementById("current-password").value = "";
         document.getElementById("new-password").value = "";
         document.getElementById("confirm-new-password").value = "";
       } catch (err) {
         console.error("Password change error:", err);
-        showToast(
-          err.message ||
-            "Could not change password. Make sure current password is correct.",
-          "error"
-        );
+        showToast(err.message || "Could not change password.", "error");
       }
     });
   }
+}
+
+if (saveBtn) {
+  saveBtn.addEventListener("click", async () => {
+    const newDisplay = displayInput ? displayInput.value.trim() : "";
+    const newUsername = usernameInput ? usernameInput.value.trim() : "";
+    const emailInput = document.getElementById("email-input");
+    const newEmail = emailInput ? emailInput.value.trim() : user.email;
+
+    try {
+      await updateProfile(user, {
+        displayName: newDisplay || user.displayName,
+      });
+
+      await user.reload();
+
+      const userData = {
+        username: newUsername,
+        displayName: newDisplay || user.displayName,
+        email: user.email,
+      };
+
+      if (user.photoURL) {
+        userData.photoURL = user.photoURL;
+      }
+
+      try {
+        if (db) {
+          await setDoc(doc(db, "users", user.uid), userData, { merge: true });
+        } else {
+          throw new Error("Firestore not available");
+        }
+        showToast("Profile updated successfully.", "success");
+      } catch (err) {
+        console.warn("Could not save to Firestore:", err);
+        if (newUsername) localStorage.setItem("dt_username", newUsername);
+        showToast("Profile updated locally (server sync failed).", "warning");
+      }
+
+      document.getElementById("user-email").textContent = user.email;
+      document.getElementById("full-name-display").textContent =
+        newDisplay || "";
+    } catch (err) {
+      console.error("Error updating profile:", err);
+      showToast(err.message || "Could not update profile.", "error");
+    }
+  });
+}
+const changePassBtn = document.getElementById("change-password-btn");
+if (changePassBtn) {
+  const isPasswordProvider =
+    user.providerData &&
+    user.providerData.some((p) => p.providerId === "password");
+  const currentPassInput = document.getElementById("current-password");
+  if (!isPasswordProvider) {
+    changePassBtn.disabled = true;
+    changePassBtn.title = "Password managed by provider; cannot change here.";
+    if (currentPassInput) currentPassInput.disabled = true;
+  }
+  changePassBtn.addEventListener("click", async () => {
+    const current = document.getElementById("current-password").value;
+    const next = document.getElementById("new-password").value;
+    const confirm = document.getElementById("confirm-new-password").value;
+
+    if (!current || !next) {
+      showToast("Please fill current and new password fields.", "error");
+      return;
+    }
+    if (next.length < 6) {
+      showToast("New password must be at least 6 characters.", "error");
+      return;
+    }
+    if (next !== confirm) {
+      showToast("New password and confirmation do not match.", "error");
+      return;
+    }
+
+    try {
+      const credential = EmailAuthProvider.credential(user.email, current);
+      await reauthenticateWithCredential(user, credential);
+      await updatePassword(user, next);
+      try {
+        await setDoc(
+          doc(db, "users", user.uid),
+          { passwordLastChanged: serverTimestamp() },
+          { merge: true }
+        );
+      } catch (err) {
+        console.warn("Could not record password change time:", err);
+      }
+      showToast("Password changed successfully.", "success");
+      document.getElementById("current-password").value = "";
+      document.getElementById("new-password").value = "";
+      document.getElementById("confirm-new-password").value = "";
+    } catch (err) {
+      console.error("Password change error:", err);
+      showToast(
+        err.message ||
+          "Could not change password. Make sure current password is correct.",
+        "error"
+      );
+    }
+  });
 }
