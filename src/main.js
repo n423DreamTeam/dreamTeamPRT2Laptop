@@ -14,10 +14,8 @@ import {
   sendPasswordResetEmail,
 } from "firebase/auth";
 import { app } from "../firebase.js";
-// Use shared Firebase app instance
 const auth = getAuth(app);
 
-// === Styled Toast Notification ===
 function showToastNotification(
   message,
   icon = "🎯",
@@ -43,7 +41,6 @@ function showToastNotification(
 
   document.body.appendChild(toast);
 
-  // Add animation keyframes if not already present
   if (!document.querySelector("style[data-challenge-toast]")) {
     const style = document.createElement("style");
     style.setAttribute("data-challenge-toast", "true");
@@ -62,18 +59,15 @@ function showToastNotification(
     document.head.appendChild(style);
   }
 
-  // Auto-remove after 3 seconds
   setTimeout(() => {
     toast.style.animation = "slideIn 0.5s ease-out reverse";
     setTimeout(() => toast.remove(), 500);
   }, 3000);
 }
 
-// Track login state
 onAuthStateChanged(auth, (user) => {
   if (user) {
     console.log("User is signed in:", user.email, user.displayName);
-    // Show challenge notification on homepage
     const path = window.location.pathname;
     if (path.includes("index.html") || path === "/") {
       showToastNotification("NEW DAILY CHALLENGE!", "🎯");
@@ -81,7 +75,6 @@ onAuthStateChanged(auth, (user) => {
   } else {
     console.log("No user is signed in.");
 
-    // Optional redirect if user logs out and tries to access dashboard
     const path = window.location.pathname;
     if (path.includes("dashboard.html")) {
       window.location.href = "/index.html";
@@ -89,7 +82,6 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
-// ✅ LOGIN
 const loginBtn = document.getElementById("login-btn");
 if (loginBtn) {
   loginBtn.addEventListener("click", (e) => {
@@ -110,7 +102,6 @@ if (loginBtn) {
   });
 }
 
-// ✅ SIGNUP
 const signupBtn = document.getElementById("signup-btn");
 if (signupBtn) {
   signupBtn.addEventListener("click", (e) => {
@@ -125,7 +116,6 @@ if (signupBtn) {
       .then((userCredential) => {
         const user = userCredential.user;
 
-        // Use your name + username as the Firebase display name
         return updateProfile(user, {
           displayName: `${name} (${username})`,
         });
@@ -141,7 +131,6 @@ if (signupBtn) {
   });
 }
 
-// ✅ GOOGLE SIGN-IN
 const googleBtn = document.getElementById("googleSignIn");
 if (googleBtn) {
   googleBtn.addEventListener("click", (e) => {
@@ -159,7 +148,6 @@ if (googleBtn) {
   });
 }
 
-// ✅ SIGN OUT
 const signOutBtn = document.getElementById("signOut");
 if (signOutBtn) {
   signOutBtn.addEventListener("click", () => {
@@ -174,7 +162,6 @@ if (signOutBtn) {
   });
 }
 
-// ✅ FORGOT PASSWORD
 const forgotLink = document.querySelector(".forgot-link");
 const forgotModal = document.getElementById("forgot-password-modal");
 const closeModal = document.querySelector(".close-modal");
@@ -194,7 +181,6 @@ if (closeModal && forgotModal) {
   });
 }
 
-// Close modal when clicking outside
 if (forgotModal) {
   forgotModal.addEventListener("click", (e) => {
     if (e.target === forgotModal) {
@@ -231,7 +217,6 @@ if (forgotPasswordForm) {
         console.error("Error code:", error.code);
         console.error("Error message:", error.message);
 
-        // More user-friendly error messages
         let userMessage = error.message;
         if (error.code === "auth/user-not-found") {
           userMessage = "No account found with this email address.";

@@ -503,7 +503,6 @@ function renderPlayers(filter = "all", search = "", page = 1) {
     grid.appendChild(card);
   });
 
-  // Show/hide pagination buttons
   if (nextPageBtn) {
     nextPageBtn.style.display = endIndex < filtered.length ? "flex" : "none";
   }

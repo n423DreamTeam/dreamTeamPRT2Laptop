@@ -7,19 +7,24 @@ import {
   EmailAuthProvider,
   reauthenticateWithCredential,
   signOut,
+  deleteUser,
 } from "firebase/auth";
-import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
+import {
+  doc,
+  setDoc,
+  getDoc,
+  serverTimestamp,
+  deleteDoc,
+} from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
-// Unlock thresholds (same as dashboard.js logic)
 const UNLOCK_THRESHOLDS = [
   { points: 120, label: "Premium Player 1" },
   { points: 150, label: "Premium Player 2" },
   { points: 200, label: "Elite Player" },
 ];
 
-// Max allowed file size for profile images (bytes)
-const MAX_PROFILE_IMAGE_SIZE = 2 * 1024 * 1024; // 2 MB
+const MAX_PROFILE_IMAGE_SIZE = 2 * 1024 * 1024;
 
 async function compressImage(file, maxWidth = 1024, quality = 0.8) {
   if (!file || !file.type || !file.type.startsWith("image/")) return file;
@@ -59,11 +64,10 @@ function initLogout() {
     return;
   }
   logoutBtn.addEventListener("click", async (e) => {
-    e.preventDefault(); // Prevent any default behavior
+    e.preventDefault();
     try {
       console.log("Logout button clicked");
 
-      // Show custom styled confirmation modal
       const confirmed = await showConfirmModal(
         "Log Out",
         "Are you sure you want to log out?"
@@ -86,7 +90,6 @@ function initLogout() {
   console.log("Logout button event listener attached");
 }
 
-// Custom styled confirmation modal
 function showConfirmModal(title, message) {
   return new Promise((resolve) => {
     const modal = document.createElement("div");
@@ -127,7 +130,6 @@ function showConfirmModal(title, message) {
     modal.appendChild(popup);
     document.body.appendChild(modal);
 
-    // Add hover effects
     const yesBtn = popup.querySelector("#confirm-yes");
     const noBtn = popup.querySelector("#confirm-no");
 
@@ -157,7 +159,6 @@ function showConfirmModal(title, message) {
       resolve(false);
     });
 
-    // Close on background click
     modal.addEventListener("click", (e) => {
       if (e.target === modal) {
         modal.remove();
@@ -167,11 +168,84 @@ function showConfirmModal(title, message) {
   });
 }
 
-// Simple toast helper (global within this module)
+function showDeleteConfirmModal() {
+  return new Promise((resolve) => {
+    const modal = document.createElement("div");
+    modal.style.cssText = `
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.7); display: flex;
+      justify-content: center; align-items: center; z-index: 10000;
+    `;
+
+    const popup = document.createElement("div");
+    popup.style.cssText = `
+      background: #0f172a;
+      border: 2px solid #ff4d4f; border-radius: 16px;
+      padding: 2rem; text-align: center; max-width: 420px; width: 92%;
+      box-shadow: 0 0 30px rgba(255, 77, 79, 0.35);
+      color: #fff; font-family: Arial, sans-serif;
+    `;
+
+    popup.innerHTML = `
+      <h2 style="font-size: 1.6rem; margin: 0 0 0.5rem 0; color: #ffcb05;">Delete Account</h2>
+      <p style="margin: 0.25rem 0; color: rgba(255,255,255,0.9);">This will delete:</p>
+      <ul style="text-align: left; margin: 0.5rem 0 1rem 1.2rem; color: rgba(255,255,255,0.9); line-height: 1.4;">
+        <li>Your login and profile</li>
+        <li>Stored progress and points</li>
+        <li>Local saved progress on this device</li>
+      </ul>
+      <p style="margin: 0.25rem 0 0.5rem 0; color: #f8caca; font-weight: bold;">Type DELETE to confirm.</p>
+      <input id="delete-confirm-input" style="width: 100%; padding: 0.75rem; border-radius: 10px; border: 1px solid #334155; background: #1e293b; color: #fff;" placeholder="DELETE" />
+      <div id="delete-error" style="color: #ff4d4f; min-height: 1.2rem; margin-top: 0.5rem; font-size: 0.9rem;"></div>
+      <div style="margin-top: 1.5rem; display: flex; gap: 0.75rem; justify-content: center;">
+        <button id="delete-confirm-btn" style="
+          background: linear-gradient(135deg, #ff4d4f, #ff7a7c);
+          color: #000; border: none; border-radius: 10px;
+          padding: 0.75rem 1.5rem; font-weight: bold; font-size: 1rem;
+          cursor: pointer; transition: 0.2s ease; opacity: 0.5; pointer-events: none;
+        ">Delete</button>
+        <button id="delete-cancel-btn" style="
+          background: rgba(255,255,255,0.12); color: #fff;
+          border: 1px solid rgba(255,255,255,0.25); border-radius: 10px;
+          padding: 0.75rem 1.5rem; font-weight: bold; font-size: 1rem;
+          cursor: pointer; transition: 0.2s ease;
+        ">Cancel</button>
+      </div>
+    `;
+
+    modal.appendChild(popup);
+    document.body.appendChild(modal);
+
+    const input = popup.querySelector("#delete-confirm-input");
+    const error = popup.querySelector("#delete-error");
+    const confirmBtn = popup.querySelector("#delete-confirm-btn");
+    const cancelBtn = popup.querySelector("#delete-cancel-btn");
+
+    function teardown(result) {
+      modal.remove();
+      resolve(result);
+    }
+
+    input.addEventListener("input", () => {
+      const ok = input.value.trim().toUpperCase() === "DELETE";
+      confirmBtn.style.opacity = ok ? "1" : "0.5";
+      confirmBtn.style.pointerEvents = ok ? "auto" : "none";
+      error.textContent = ok ? "" : "Enter DELETE to continue.";
+    });
+
+    confirmBtn.addEventListener("click", () => teardown(true));
+    cancelBtn.addEventListener("click", () => teardown(false));
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) teardown(false);
+    });
+
+    input.focus();
+  });
+}
+
 function showToast(message, type = "info", ms = 3500) {
   const root = document.getElementById("toast-root");
   if (!root) {
-    // fallback to alert if toast root missing
     alert(message);
     return;
   }
@@ -179,7 +253,6 @@ function showToast(message, type = "info", ms = 3500) {
   t.className = `toast toast-${type}`;
   t.textContent = message;
   root.appendChild(t);
-  // animate in
   requestAnimationFrame(() => {
     t.style.opacity = "1";
     t.style.transform = "translateY(0)";
@@ -197,17 +270,91 @@ document.addEventListener("DOMContentLoaded", () => {
       loadAccountData(user);
       initProfileControls(user);
       initLogout();
+      initDeleteAccount(user);
     } else {
       window.location.href = "./login.html";
     }
   });
 });
 
+async function ensureRecentLogin(user) {
+  const isPasswordProvider =
+    user.providerData &&
+    user.providerData.some((p) => p.providerId === "password");
+
+  if (!isPasswordProvider) return;
+
+  const pwd = prompt("Re-enter your password to delete your account:");
+  if (pwd === null) {
+    throw new Error("cancelled");
+  }
+  if (!pwd.trim()) {
+    throw new Error("Password is required for deletion.");
+  }
+
+  const credential = EmailAuthProvider.credential(user.email, pwd.trim());
+  await reauthenticateWithCredential(user, credential);
+}
+
+function initDeleteAccount(user) {
+  const btn = document.getElementById("delete-account-btn");
+  if (!btn) return;
+
+  btn.addEventListener("click", async () => {
+    const confirmed = await showDeleteConfirmModal();
+
+    if (!confirmed) return;
+
+    try {
+      showToast("Deleting account...", "info", 4000);
+
+      try {
+        await ensureRecentLogin(user);
+      } catch (reauthErr) {
+        if (reauthErr.message === "cancelled") {
+          showToast("Account deletion cancelled.", "warning", 2000);
+          return;
+        }
+        throw reauthErr;
+      }
+
+      try {
+        await deleteDoc(doc(db, "users", user.uid));
+      } catch (err) {
+        console.warn("Could not delete user profile doc:", err);
+      }
+
+      await deleteUser(user);
+
+      localStorage.removeItem("dt_username");
+      localStorage.removeItem("dt_user_progress_v1");
+
+      showToast("Account deleted. Redirecting...", "success", 2500);
+      setTimeout(() => {
+        window.location.href = "./signup.html";
+      }, 1200);
+    } catch (err) {
+      console.error("Account deletion failed:", err);
+      if (err && err.code === "auth/requires-recent-login") {
+        showToast(
+          "Please log in again and retry account deletion.",
+          "error",
+          4000
+        );
+      } else {
+        showToast(
+          err.message || "Account deletion failed. Please try again.",
+          "error",
+          4000
+        );
+      }
+    }
+  });
+}
+
 async function loadAccountData(user) {
-  // Display user email
   document.getElementById("user-email").textContent = user.email;
 
-  // Populate profile fields if present
   const displayInput = document.getElementById("display-name-input");
   const usernameInput = document.getElementById("username-input");
   const profileImg = document.getElementById("profile-img");
@@ -218,10 +365,8 @@ async function loadAccountData(user) {
   const emailInput = document.getElementById("email-input");
   if (emailInput) emailInput.value = user.email || "";
 
-  // username: load from Firestore if present
   try {
     if (db && user && user.uid) {
-      // Verify db is a valid Firestore instance
       if (typeof db === "object" && db !== null) {
         const userDocRef = doc(db, "users", user.uid);
         const userDoc = await getDoc(userDocRef);
@@ -229,12 +374,10 @@ async function loadAccountData(user) {
           const data = userDoc.data();
           if (usernameInput) usernameInput.value = data.username || "";
 
-          // Load profile photo from Firestore (base64 stored here)
           if (data.photoURL && profileImg) {
             profileImg.src = data.photoURL;
           }
 
-          // show password last changed if available
           const pwdInfo = document.getElementById("password-info");
           if (pwdInfo) {
             if (data.passwordLastChanged && data.passwordLastChanged.toDate) {
@@ -252,24 +395,19 @@ async function loadAccountData(user) {
         throw new Error("Firestore database instance is invalid");
       }
     } else {
-      // Firestore not available, use localStorage
       const storedUsername = localStorage.getItem("dt_username");
       if (usernameInput) usernameInput.value = storedUsername || "";
     }
   } catch (err) {
-    // Surface the error to the user while keeping the fallback behavior
     console.error("Could not load username from Firestore:", err);
-    // Silently fall back to localStorage without showing toast on every page load
     const storedUsername = localStorage.getItem("dt_username");
     if (usernameInput) usernameInput.value = storedUsername || "";
   }
 
-  // Fallback: profile image from Firebase Auth if not in Firestore
   if (profileImg && !profileImg.src.includes("data:image")) {
     profileImg.src = user.photoURL || "./images/default-avatar.png";
   }
 
-  // Load user progress from localStorage
   const PROGRESS_KEY = "dt_user_progress_v1";
   let userProgress = { points: 0, wins: 0 };
 
@@ -280,20 +418,16 @@ async function loadAccountData(user) {
     console.warn("Could not load user progress:", e);
   }
 
-  // Update stats
   document.getElementById("total-points").textContent = userProgress.points;
   document.getElementById("total-wins").textContent = userProgress.wins;
 
-  // Count unlocked players
   const unlockedCount = UNLOCK_THRESHOLDS.filter(
     (t) => userProgress.points >= t.points
   ).length;
   document.getElementById("players-unlocked").textContent = unlockedCount;
 
-  // Populate unlocks list
   populateUnlocks(userProgress.points);
 
-  // Show next unlock progress
   showNextUnlockProgress(userProgress.points);
 }
 
@@ -330,11 +464,9 @@ function populateUnlocks(currentPoints) {
 }
 
 function showNextUnlockProgress(currentPoints) {
-  // Find the next locked unlock
   const nextUnlock = UNLOCK_THRESHOLDS.find((t) => currentPoints < t.points);
 
   if (!nextUnlock) {
-    // All unlocked
     document.getElementById("next-unlock-label").textContent =
       "🌟 All Premium Players Unlocked!";
     document.getElementById("next-unlock-fill").style.width = "100%";
@@ -355,7 +487,6 @@ function showNextUnlockProgress(currentPoints) {
   document.getElementById("next-unlock-text").textContent = `${progress}%`;
 }
 
-// Reset progress (with confirmation)
 window.resetProgress = function () {
   if (
     confirm(
@@ -369,7 +500,6 @@ window.resetProgress = function () {
   }
 };
 
-// Initialize profile controls: photo upload, save profile, change password
 function initProfileControls(user) {
   const photoInput = document.getElementById("profile-photo-input");
   const profileImg = document.getElementById("profile-img");
@@ -378,7 +508,6 @@ function initProfileControls(user) {
   const displayInput = document.getElementById("display-name-input");
   const usernameInput = document.getElementById("username-input");
 
-  // upload progress UI state
   let progressEl = null;
 
   function createProgressBar() {
@@ -398,7 +527,6 @@ function initProfileControls(user) {
     bar.style.transition = "width 200ms linear";
 
     container.appendChild(bar);
-    // attach just under the avatar image
     if (profileImg && profileImg.parentNode) {
       profileImg.parentNode.appendChild(container);
     } else {
@@ -427,14 +555,11 @@ function initProfileControls(user) {
       let file = e.target.files && e.target.files[0];
       if (!file) return;
 
-      // Show preview locally
       const reader = new FileReader();
       reader.onload = (event) => {
         if (profileImg) profileImg.src = event.target.result;
-        // Store the actual file object for later upload
         photoInput.dataset.pendingFile = "true";
         photoInput._fileToUpload = file;
-        // Show the save photo button
         if (savePhotoBtn) savePhotoBtn.style.display = "inline-flex";
         showToast("Photo ready. Click 'Save Photo' to upload.", "success");
       };
@@ -442,7 +567,6 @@ function initProfileControls(user) {
     });
   }
 
-  // Save photo button handler
   if (savePhotoBtn) {
     savePhotoBtn.addEventListener("click", async () => {
       if (!photoInput || !photoInput._fileToUpload) {
@@ -454,10 +578,8 @@ function initProfileControls(user) {
         showToast("Saving photo...", "info", 2000);
         const file = photoInput._fileToUpload;
 
-        // Compress if needed
         const compressedFile = await compressImage(file);
 
-        // Create a Blob if compressImage returned a Blob
         const uploadFile =
           compressedFile instanceof Blob
             ? new File([compressedFile], file.name, {
@@ -468,7 +590,6 @@ function initProfileControls(user) {
         let photoURL;
         let usedFallback = false;
 
-        // For now, skip Firebase Storage and use base64 directly (CORS workaround)
         console.log("Converting image to base64 (CORS workaround)...");
         photoURL = await new Promise((resolve, reject) => {
           const reader = new FileReader();
@@ -478,10 +599,8 @@ function initProfileControls(user) {
         });
         usedFallback = true;
 
-        // Update preview
         if (profileImg) profileImg.src = photoURL;
 
-        // Save to Firestore ONLY (base64 is too large for Auth photoURL)
         if (db) {
           try {
             await setDoc(
@@ -503,7 +622,6 @@ function initProfileControls(user) {
           return;
         }
 
-        // Clear pending file and hide button
         delete photoInput._fileToUpload;
         delete photoInput.dataset.pendingFile;
         savePhotoBtn.style.display = "none";
@@ -527,22 +645,18 @@ function initProfileControls(user) {
       const newEmail = emailInput ? emailInput.value.trim() : user.email;
 
       try {
-        // update Firebase displayName only (photo has separate save button)
         await updateProfile(user, {
           displayName: newDisplay || user.displayName,
         });
 
-        // Reload user to get updated photoURL
         await user.reload();
 
-        // store username and photoURL in Firestore under users/{uid}
         const userData = {
           username: newUsername,
           displayName: newDisplay || user.displayName,
           email: user.email,
         };
 
-        // Include photoURL if it exists
         if (user.photoURL) {
           userData.photoURL = user.photoURL;
         }
@@ -569,10 +683,8 @@ function initProfileControls(user) {
       }
     });
   }
-  // Change password flow
   const changePassBtn = document.getElementById("change-password-btn");
   if (changePassBtn) {
-    // If account is not password-based, disable password change
     const isPasswordProvider =
       user.providerData &&
       user.providerData.some((p) => p.providerId === "password");
@@ -604,7 +716,6 @@ function initProfileControls(user) {
         const credential = EmailAuthProvider.credential(user.email, current);
         await reauthenticateWithCredential(user, credential);
         await updatePassword(user, next);
-        // record password change time in Firestore for this user
         try {
           await setDoc(
             doc(db, "users", user.uid),
@@ -615,7 +726,6 @@ function initProfileControls(user) {
           console.warn("Could not record password change time:", err);
         }
         showToast("Password changed successfully.", "success");
-        // clear inputs
         document.getElementById("current-password").value = "";
         document.getElementById("new-password").value = "";
         document.getElementById("confirm-new-password").value = "";

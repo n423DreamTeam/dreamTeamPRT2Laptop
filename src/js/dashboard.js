@@ -9,7 +9,6 @@ import {
 import { auth, db } from "../../firebase.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-  // === grab elements once ===
   const dropZone = document.getElementById("drop-zone");
   const playersContainer = document.querySelector(".players");
   const pointsBar = document.querySelector("#points-bar");
@@ -18,7 +17,6 @@ document.addEventListener("DOMContentLoaded", () => {
   let assistsVal = document.querySelector("#assists-val");
   const refreshBtn = document.getElementById("refresh-btn");
 
-  // ✅ Backend API endpoint
   const API_URL =
     window.location.hostname === "localhost"
       ? "http://localhost:3001/api"
@@ -27,11 +25,11 @@ document.addEventListener("DOMContentLoaded", () => {
   let allPlayersPool = [];
   let playersData = [];
   let lineup = [];
+  const MAX_LINEUP_SIZE = 5;
 
   let goalPoints = 150;
   let goalAssists = 50;
 
-  // === User progression (points & wins) persisted in localStorage ===
   const PROGRESS_KEY = "dt_user_progress_v1";
   let userProgress = { points: 0, wins: 0 };
   let firebaseUser = null;
@@ -97,22 +95,42 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Small UI hook to show user's points
   function renderUserPointsHud() {
     let hud = document.querySelector(".user-points-hud");
     if (!hud) {
       hud = document.createElement("div");
       hud.className = "user-points-hud";
       hud.style.cssText =
-        "position: absolute; right: 2rem; top: 1.5rem; color: #fff; background: rgba(0,0,0,0.4); padding: 0.4rem 0.8rem; border-radius: 10px; font-weight:700;";
+        "position: fixed; right: 3rem; top: 10rem; color: #fff; background: rgba(0,0,0,0.4); padding: 0.7rem 1.5rem; border-radius: 10px; font-weight:700; z-index: 999;";
       document.body.appendChild(hud);
+
+      const updateHudPosition = () => {
+        if (window.innerWidth <= 600) {
+          hud.style.right = "1.2rem";
+          hud.style.top = "6.5rem";
+          hud.style.padding = "0.75rem 1rem";
+          hud.style.fontSize = "0.9rem";
+        } else if (window.innerWidth <= 900) {
+          hud.style.right = "1.5rem";
+          hud.style.top = "7.5rem";
+          hud.style.padding = "0.85rem 1.2rem";
+          hud.style.fontSize = "0.95rem";
+        } else {
+          hud.style.right = "3rem";
+          hud.style.top = "10rem";
+          hud.style.padding = "1rem 1.5rem";
+          hud.style.fontSize = "1rem";
+        }
+      };
+
+      updateHudPosition();
+      window.addEventListener("resize", updateHudPosition);
     }
     hud.innerHTML = `Points: <span style='color:#ffcb05'>${userProgress.points}</span> • Wins: ${userProgress.wins}`;
   }
 
   renderUserPointsHud();
 
-  // === Toast notification for rewards ===
   function showRewardToast(points) {
     const toast = document.createElement("div");
     toast.className = "reward-toast";
@@ -138,7 +156,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.body.appendChild(toast);
 
-    // Add animation keyframes if not already present
     if (!document.querySelector("style[data-reward-toast]")) {
       const style = document.createElement("style");
       style.setAttribute("data-reward-toast", "true");
@@ -157,14 +174,12 @@ document.addEventListener("DOMContentLoaded", () => {
       document.head.appendChild(style);
     }
 
-    // Auto-remove after 4 seconds
     setTimeout(() => {
       toast.style.animation = "slideIn 0.5s ease-out reverse";
       setTimeout(() => toast.remove(), 500);
     }, 4000);
   }
 
-  // Keep local progress in sync with authenticated user data
   onAuthStateChanged(auth, (user) => {
     firebaseUser = user;
     if (user) {
@@ -172,19 +187,15 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // === Generate randomized but realistic daily challenge ===
   function generateDailyChallenge() {
-    // Get day of year to ensure same challenge all day
     const now = new Date();
     const start = new Date(now.getFullYear(), 0, 0);
     const diff = now - start;
     const oneDay = 1000 * 60 * 60 * 24;
     const dayOfYear = Math.floor(diff / oneDay);
 
-    // Use day of year as seed for consistency
     const seed = dayOfYear % 10;
 
-    // Challenge presets (60 points, 25 assists each)
     const challenges = [
       {
         points: 60,
@@ -213,17 +224,14 @@ document.addEventListener("DOMContentLoaded", () => {
     return challenge;
   }
 
-  // === Initialize daily challenge ===
   const dailyChallenge = generateDailyChallenge();
 
-  // === Update challenge objective in DOM ===
   function updateChallengeDisplay() {
     const objectiveText = document.querySelector(".puzzle-objective p");
     if (objectiveText) {
       objectiveText.innerHTML = `Achieve a total team score of <span class="highlight">${goalPoints} points</span> and <span class="highlight">${goalAssists} assists</span> using any 5 players.<br><em style="font-size: 0.9em; color: rgba(255,255,255,0.7);">${dailyChallenge.desc}</em>`;
     }
 
-    // Update progress bar labels
     const pointsLabel = document
       .querySelector("#points-bar")
       .parentElement.parentElement.querySelector("p");
@@ -235,21 +243,18 @@ document.addEventListener("DOMContentLoaded", () => {
     if (assistsLabel)
       assistsLabel.innerHTML = `<span id="assists-val">0</span> / ${goalAssists}`;
 
-    // Re-bind the points/assists DOM refs in case they were replaced
     pointsVal = document.querySelector("#points-val");
     assistsVal = document.querySelector("#assists-val");
   }
 
   updateChallengeDisplay();
 
-  // === Current roster with real stats ===
-  // Better players (higher PPG) are locked and require points to unlock
   const currentRoster = [
-    { name: "Tyrese Haliburton", pts: 20.1, ast: 10.8, requiredPoints: 200 }, // Elite scorer
-    { name: "Pascal Siakam", pts: 21.3, ast: 4.8, requiredPoints: 200 }, // Elite scorer
+    { name: "Tyrese Haliburton", pts: 20.1, ast: 10.8, requiredPoints: 200 },
+    { name: "Pascal Siakam", pts: 21.3, ast: 4.8, requiredPoints: 200 },
     { name: "Andrew Nembhard", pts: 9.2, ast: 4.1, requiredPoints: 0 },
     { name: "Aaron Nesmith", pts: 12.2, ast: 1.5, requiredPoints: 100 },
-    { name: "Benedict Mathurin", pts: 14.5, ast: 2.0, requiredPoints: 150 }, // Good scorer
+    { name: "Benedict Mathurin", pts: 14.5, ast: 2.0, requiredPoints: 150 },
     { name: "T.J. McConnell", pts: 9.8, ast: 4.3, requiredPoints: 0 },
     { name: "Jay Huff", pts: 7.8, ast: 1.0, requiredPoints: 0 },
     { name: "Obi Toppin", pts: 10.3, ast: 1.5, requiredPoints: 50 },
@@ -261,7 +266,7 @@ document.addEventListener("DOMContentLoaded", () => {
     { name: "Kam Jones", pts: 0.0, ast: 0.0, requiredPoints: 0 },
     { name: "Tony Bradley", pts: 4.9, ast: 0.7, requiredPoints: 0 },
     { name: "Jeremiah Robinson-Earl", pts: 4.8, ast: 0.8, requiredPoints: 0 },
-    { name: "Quenton Jackson", pts: 11.8, ast: 3.6, requiredPoints: 100 }, // Good scorer
+    { name: "Quenton Jackson", pts: 11.8, ast: 3.6, requiredPoints: 100 },
     { name: "Ethan Thompson", pts: 2.0, ast: 1.0, requiredPoints: 0 },
   ];
 
@@ -270,16 +275,13 @@ document.addEventListener("DOMContentLoaded", () => {
     return shuffled.slice(0, Math.min(count, shuffled.length));
   }
 
-  // === Fetch Pacers players from backend API + merge with current roster ===
   async function fetchPacersPlayers() {
     const cacheKey = "pacersPlayers_2024";
-    allPlayersPool = [...currentRoster]; // Start with current roster
+    allPlayersPool = [...currentRoster];
 
     try {
-      // Try to fetch additional players from API for historical/past players
       const playersRes = await fetch(`${API_URL}/players?team_id=12`);
 
-      // Handle various error responses
       if (playersRes.status === 429) {
         console.warn(
           "⚠️ Server returned 429 Too Many Requests, using current roster only"
@@ -298,20 +300,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
         console.log(`🟣 Found ${apiPlayers.length} players from API.`);
 
-        // Convert API players to our format
         const apiFormattedPlayers = apiPlayers
           .map((p) => {
-            // Check if this player is already in current roster
             const existsInRoster = currentRoster.some(
               (cr) =>
                 cr.name.toLowerCase() ===
                 `${p.first_name} ${p.last_name}`.toLowerCase()
             );
 
-            // Skip if already in current roster (avoid duplicates)
             if (existsInRoster) return null;
 
-            // Generate realistic stats based on position for API players
             let pts, ast;
             if (p.position === "G") {
               pts = 10 + Math.random() * 15;
@@ -331,14 +329,12 @@ document.addEventListener("DOMContentLoaded", () => {
               name: `${p.first_name} ${p.last_name}`,
               pts: parseFloat(pts.toFixed(1)),
               ast: parseFloat(ast.toFixed(1)),
-              // Past players require points to unlock
               requiredPoints:
                 pts >= 18 ? 200 : pts >= 16 ? 150 : pts >= 14 ? 120 : 50,
             };
           })
           .filter((p) => p !== null);
 
-        // Merge API players with current roster
         allPlayersPool = [...currentRoster, ...apiFormattedPlayers];
         console.log(
           `✅ Merged current roster (${currentRoster.length}) with API players (${apiFormattedPlayers.length}). Total pool: ${allPlayersPool.length}`
@@ -351,7 +347,6 @@ document.addEventListener("DOMContentLoaded", () => {
       );
     }
 
-    // Display only 5 random players from the full pool
     playersData = pickRandomPlayers(allPlayersPool, 5);
     console.log(
       `✅ Loaded ${allPlayersPool.length} total players (${
@@ -363,16 +358,13 @@ document.addEventListener("DOMContentLoaded", () => {
     displayPlayers(playersData);
   }
 
-  // === Display players ===
   function displayPlayers(players) {
-    // Hard cap to 5 visible entries even if called with a larger array
     const visible = players.slice(0, 5);
 
     if (!visible.length) {
       playersContainer.innerHTML = `<p style="color:yellow">No Pacers found.</p>`;
       return;
     }
-    // Build HTML with lock state
     playersContainer.innerHTML = visible
       .map((p) => {
         const locked =
@@ -393,7 +385,6 @@ document.addEventListener("DOMContentLoaded", () => {
       })
       .join("");
 
-    // Attach listeners but skip locked players
     playersContainer.querySelectorAll(".player").forEach((playerEl) => {
       const isLocked = playerEl.classList.contains("locked");
       const name = playerEl.getAttribute("data-name");
@@ -401,8 +392,14 @@ document.addEventListener("DOMContentLoaded", () => {
         playerEl.addEventListener("dragstart", (e) => {
           e.dataTransfer.setData("text/plain", name.toUpperCase());
         });
+
+        playerEl.addEventListener("click", () => {
+          const player = players.find(
+            (p) => p.name.toUpperCase() === name.toUpperCase()
+          );
+          addPlayerToLineup(player);
+        });
       } else {
-        // show a tooltip on click explaining unlock requirement
         playerEl.addEventListener("click", () => {
           const req = playerEl.getAttribute("data-req") || 0;
           alert(
@@ -413,10 +410,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // === Initialize ===
   fetchPacersPlayers();
 
-  // === Drag & Drop logic ===
   function updateBars() {
     const totalPoints = lineup.reduce((sum, p) => sum + p.pts, 0);
     const totalAssists = lineup.reduce((sum, p) => sum + p.ast, 0);
@@ -436,35 +431,30 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function showChallengeComplete(totalPoints, totalAssists) {
-    // Award user points and record a win
-    const reward = Math.max(25, Math.round(goalPoints * 0.2)); // minimum reward
+    const reward = Math.max(25, Math.round(goalPoints * 0.2));
     const previousPoints = userProgress.points;
     userProgress.points += reward;
     userProgress.wins += 1;
     saveProgress();
     renderUserPointsHud();
 
-    // Show reward toast notification
     showRewardToast(reward);
 
     const perfectChallengeAchieved =
       totalPoints >= goalPoints * 1.5 && totalAssists >= goalAssists * 1.5;
 
-    // Persist to Firestore when signed in
     syncProgressToFirestore({
       pointsDelta: reward,
       winIncrement: 1,
       perfectChallengeAchieved,
     });
 
-    // Check for newly unlocked players from current roster
     const newlyUnlockedPlayers = currentRoster.filter((player) => {
       const wasLocked = previousPoints < player.requiredPoints;
       const isNowUnlocked = userProgress.points >= player.requiredPoints;
       return wasLocked && isNowUnlocked && player.requiredPoints > 0;
     });
 
-    // Create modal overlay and popup
     const modal = document.createElement("div");
     modal.style.cssText = `
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -529,7 +519,6 @@ document.addEventListener("DOMContentLoaded", () => {
     modal.appendChild(popup);
     document.body.appendChild(modal);
 
-    // Play Again: clear lineup and refresh players
     document.getElementById("play-again-btn").addEventListener("click", () => {
       modal.remove();
       lineup = [];
@@ -539,12 +528,10 @@ document.addEventListener("DOMContentLoaded", () => {
       fetchPacersPlayers();
     });
 
-    // Done: just close the popup
     document.getElementById("close-popup-btn").addEventListener("click", () => {
       modal.remove();
     });
 
-    // Re-render players so any newly-unlocked players appear
     displayPlayers(playersData);
   }
 
@@ -552,26 +539,22 @@ document.addEventListener("DOMContentLoaded", () => {
     const tag = document.createElement("div");
     tag.className = "lineup-player";
 
-    // Create a container for player name and X button
     const playerContent = document.createElement("span");
     playerContent.className = "player-content";
     playerContent.textContent = name;
     tag.appendChild(playerContent);
 
-    // Create X button to remove player
     const removeBtn = document.createElement("button");
     removeBtn.className = "remove-player-btn";
     removeBtn.textContent = "✕";
     removeBtn.addEventListener("click", (e) => {
       e.stopPropagation();
-      // Remove player from lineup
       lineup = lineup.filter(
         (p) => p.name.toUpperCase() !== name.toUpperCase()
       );
       tag.remove();
       updateBars();
 
-      // Show default text if lineup is now empty
       if (lineup.length === 0) {
         const defaultText = dropZone.querySelector("p");
         if (defaultText) {
@@ -581,20 +564,17 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     tag.appendChild(removeBtn);
 
-    // Hide the default text when first player is added
     const defaultText = dropZone.querySelector("p");
-    if (defaultText && lineup.length === 0) {
+    if (defaultText) {
       defaultText.style.display = "none";
     }
 
-    // Show/create clear button when players are in the lineup
     let clearBtn = dropZone.querySelector(".clear-btn");
     if (!clearBtn) {
       clearBtn = document.createElement("button");
       clearBtn.className = "clear-btn";
       clearBtn.textContent = "✕ Clear";
       clearBtn.addEventListener("click", () => {
-        // Clear the lineup
         lineup = [];
         challengeCompleted = false;
         dropZone.innerHTML = `<p><strong>BUILD YOUR DREAMTEAM</strong><br>Drag & Drop players into this area</p>`;
@@ -606,7 +586,6 @@ document.addEventListener("DOMContentLoaded", () => {
       dropZone.appendChild(clearBtn);
     }
 
-    // Insert player tag before the clear button
     if (clearBtn) {
       dropZone.insertBefore(tag, clearBtn);
     } else {
@@ -614,27 +593,28 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  dropZone.addEventListener("dragover", (e) => e.preventDefault());
-  dropZone.addEventListener("drop", (e) => {
-    e.preventDefault();
-    const name = e.dataTransfer.getData("text/plain").trim();
-    if (
-      !name ||
-      lineup.some((p) => p.name.toUpperCase() === name) ||
-      lineup.length >= 5
-    )
-      return;
-
-    const player = playersData.find((p) => p.name.toUpperCase() === name);
+  function addPlayerToLineup(player) {
     if (!player) return;
+
+    const exists = lineup.some(
+      (p) => p.name.toUpperCase() === player.name.toUpperCase()
+    );
+    if (exists || lineup.length >= MAX_LINEUP_SIZE) return;
 
     lineup.push(player);
     createLineupTag(player.name);
     updateBars();
+  }
+
+  dropZone.addEventListener("dragover", (e) => e.preventDefault());
+  dropZone.addEventListener("drop", (e) => {
+    e.preventDefault();
+    const name = e.dataTransfer.getData("text/plain").trim();
+    const player = playersData.find((p) => p.name.toUpperCase() === name);
+    addPlayerToLineup(player);
   });
 
   refreshBtn.addEventListener("click", () => {
-    // Reshuffle to a new set of 5 from the existing pool; if empty, refetch
     if (!allPlayersPool.length) {
       fetchPacersPlayers();
       return;
@@ -654,7 +634,6 @@ document.addEventListener("DOMContentLoaded", () => {
     angle = (360 / quantity) * current;
     slider.style.transform = `perspective(1000px) rotateY(-${angle}deg)`;
   }
-  // Automatic rotation for the carousel (floating banner is preferred)
   const banner =
     document.querySelector(".banner.floating") ||
     document.querySelector(".banner");
@@ -673,7 +652,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Arrow buttons (if present)
   if (leftBtn)
     leftBtn.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -685,13 +663,11 @@ document.addEventListener("DOMContentLoaded", () => {
       rotateCarousel(1);
     });
 
-  // Pause auto-rotation while hovering the banner
   if (banner) {
     banner.addEventListener("mouseenter", stopAutoRotate);
     banner.addEventListener("mouseleave", () => startAutoRotate(3500));
   }
 
-  // Start auto-rotation
   startAutoRotate(3500);
 });
 const dateElement = document.getElementById("challenge-date");

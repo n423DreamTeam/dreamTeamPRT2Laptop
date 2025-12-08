@@ -17,7 +17,6 @@
       sizes="16x16"
       href="/src/images/favicon-16x16.png"
     />
-    <!-- Vite injects styles from main.js -->
   </head>
   <body class="dashboard-body">
     <header class="navbar">
@@ -128,7 +127,8 @@
       <section class="puzzle-section" id="puzzle">
         <h2>STAT-MATCH PUZZLE</h2>
         <p class="subtitle">
-          Drag and drop players to meet statistical thresholds.
+          Tap or drag players to build a 5-player lineup that meets today’s
+          point and assist goals.
         </p>
 
         <div class="puzzle-objective">
@@ -140,11 +140,23 @@
           </p>
         </div>
 
+        <div class="puzzle-instructions">
+          <div class="step" data-step="1">
+            Tap or drag a player tile to add them.
+          </div>
+          <div class="step" data-step="2">
+            Add up to 5 players. Remove with the ✕ or use Clear.
+          </div>
+          <div class="step" data-step="3">
+            Fill both bars to hit today’s goals and claim the reward.
+          </div>
+        </div>
+
         <div class="puzzle-layout">
           <div class="drop-zone" id="drop-zone">
             <p>
-              <strong>BUILD YOUR DREAMTEAM</strong><br />Drag & Drop players
-              into this area
+              <strong>BUILD YOUR DREAMTEAM</strong><br />Tap a player tile (or
+              drag it) to add them here. Remove with the ✕.
             </p>
           </div>
 
@@ -164,7 +176,6 @@
           </div>
         </div>
 
-        <!-- Feedback bars -->
         <div class="feedback">
           <div class="feedback-item">
             <h4>Points</h4>

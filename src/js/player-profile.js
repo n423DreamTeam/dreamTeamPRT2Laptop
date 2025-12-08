@@ -468,7 +468,6 @@ const players = [
   },
 ];
 
-// Get player ID from URL
 const urlParams = new URLSearchParams(window.location.search);
 const playerId = urlParams.get("id");
 const player = players.find((p) => p.id === playerId);
@@ -476,10 +475,8 @@ const player = players.find((p) => p.id === playerId);
 const profileContainer = document.getElementById("player-profile");
 
 if (player) {
-  // Update page title
   document.title = `${player.name} - Player Profile`;
 
-  // Render player profile
   profileContainer.innerHTML = `
     <div class="profile-wrapper">
       <a href="players.html" class="back-link">← Back to Players</a>

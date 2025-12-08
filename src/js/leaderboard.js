@@ -41,7 +41,6 @@ function subscribeLeaderboard() {
         const challenges = data.challengesCompleted ?? data.wins ?? 0;
         const isSelf = auth.currentUser && auth.currentUser.uid === docSnap.id;
 
-        // Use photoURL if available, otherwise show initials
         const avatarContent = data.photoURL
           ? `<img src="${data.photoURL}" alt="${
               data.displayName || "User"
@@ -73,7 +72,6 @@ function subscribeLeaderboard() {
   );
 }
 
-// Update the date
 function updateChallengeDate() {
   const dateElement = document.getElementById("challenge-date");
   if (dateElement) {
