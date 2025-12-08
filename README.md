@@ -1,5 +1,24 @@
 # 🏀 DreamTeam - Indiana Pacers Fan Platform
 
+# App Link:
+
+https://n423-6048d.web.app/
+
+## 🚀 Core Functionality Overview
+
+- User authentication (sign up, login, profile management)
+- Explore full Pacers roster with detailed player stats and profiles
+- Daily stats-based challenges and puzzle games
+- Points and rewards system for completing challenges
+- Unlock new players by earning points
+- Persistent progress tracking (local and cloud)
+- Real-time leaderboard with player rankings
+- Community chat with real-time messaging, editing, and deleting
+- Responsive, mobile-friendly design with dark theme
+- Animated notifications, modals, and toasts for feedback
+- Secure data storage and image hosting via Firebase
+- Integration with Ball Don't Lie NBA API for live stats
+
 A comprehensive web application for Indiana Pacers fans to explore player statistics, engage in daily challenges, manage rewards, and connect with the community through chat. Features real-time data synchronization, player unlock mechanics, and gamification elements.
 
 **Live Demo:** Coming Soon  

@@ -5,13 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>My Account - Dream Team</title>
     <link rel="icon" href="/assets/favicon-CWIExPQd.ico" />
-    <!-- Vite injects styles from main.js -->
-    <script type="module" crossorigin src="/assets/account-Dt-Bc1_1.js"></script>
-    <link rel="modulepreload" crossorigin href="/assets/main-C2pGUQwL.js">
-    <link rel="stylesheet" crossorigin href="/assets/main-CMSCANdy.css">
+    <script type="module" crossorigin src="/assets/account-8qqDoPrC.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/main-BaAJt1vu.js">
+    <link rel="stylesheet" crossorigin href="/assets/main-DFtvwoqq.css">
   </head>
   <body class="account-body">
-    <!-- Navbar -->
     <div class="navbar">
       <div class="logo">DREAM TEAM</div>
       <div class="hamburger">
@@ -53,7 +51,6 @@
       </nav>
     </div>
     <div class="account-container">
-      <!-- Header with centered profile -->
       <div class="account-header">
         <div class="profile-circle">
           <img
@@ -109,7 +106,6 @@
         <p id="user-email" class="user-email">Loading...</p>
       </div>
 
-      <!-- Stats Grid -->
       <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-icon">🏆</div>
@@ -128,7 +124,6 @@
         </div>
       </div>
 
-      <!-- Profile Info Cards -->
       <div class="info-cards">
         <div class="info-card">
           <div class="card-header">
@@ -242,7 +237,6 @@
         </div>
       </div>
 
-      <!-- Unlocks Section -->
       <div class="section">
         <div class="section-header">
           <svg
@@ -266,7 +260,6 @@
         </div>
       </div>
 
-      <!-- Next Unlock Section -->
       <div class="section">
         <div class="section-header">
           <svg
@@ -295,7 +288,6 @@
         </div>
       </div>
 
-      <!-- Actions -->
       <div class="button-group">
         <button class="btn btn-danger" onclick="resetProgress()">
           <svg
@@ -338,8 +330,14 @@
         </button>
       </div>
 
-      <!-- Bottom actions -->
       <div class="button-group" style="margin: 2rem 0; justify-content: center">
+        <button
+          id="delete-account-btn"
+          class="btn btn-danger"
+          style="max-width: 240px"
+        >
+          Delete Account
+        </button>
         <button
           id="logout-btn"
           class="btn btn-secondary"
@@ -350,7 +348,6 @@
       </div>
     </div>
 
-    <!-- Toast notifications -->
     <div id="toast-root" aria-live="polite" aria-atomic="true"></div>
 
   </body>
