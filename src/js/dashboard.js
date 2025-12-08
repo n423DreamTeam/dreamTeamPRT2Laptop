@@ -250,11 +250,11 @@ document.addEventListener("DOMContentLoaded", () => {
   updateChallengeDisplay();
 
   const currentRoster = [
-    { name: "Tyrese Haliburton", pts: 20.1, ast: 10.8, requiredPoints: 200 },
-    { name: "Pascal Siakam", pts: 21.3, ast: 4.8, requiredPoints: 200 },
+    { name: "Tyrese Haliburton", pts: 20.1, ast: 10.8, requiredPoints: 0 },
+    { name: "Pascal Siakam", pts: 21.3, ast: 4.8, requiredPoints: 0 },
     { name: "Andrew Nembhard", pts: 9.2, ast: 4.1, requiredPoints: 0 },
-    { name: "Aaron Nesmith", pts: 12.2, ast: 1.5, requiredPoints: 100 },
-    { name: "Benedict Mathurin", pts: 14.5, ast: 2.0, requiredPoints: 150 },
+    { name: "Aaron Nesmith", pts: 12.2, ast: 1.5, requiredPoints: 0 },
+    { name: "Benedict Mathurin", pts: 14.5, ast: 2.0, requiredPoints: 0 },
     { name: "T.J. McConnell", pts: 9.8, ast: 4.3, requiredPoints: 0 },
     { name: "Jay Huff", pts: 7.8, ast: 1.0, requiredPoints: 0 },
     { name: "Obi Toppin", pts: 10.3, ast: 1.5, requiredPoints: 50 },
