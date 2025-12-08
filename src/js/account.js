@@ -511,22 +511,52 @@ function initProfileControls(user) {
   // ---- PHOTO UPLOAD HANDLER ----
   if (photoInput) {
     photoInput.addEventListener("change", (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
+      let file = e.target.files && e.target.files[0];
+      if (!file) {
+        showToast("No photo selected.", "error");
+        savePhotoBtn.style.display = "none";
+        return;
+      }
+
+      // Mobile fallback: sometimes file input returns empty on first try
+      if (!file.size || !file.type) {
+        showToast(
+          "Photo selection failed. Try again or use a different image.",
+          "error"
+        );
+        savePhotoBtn.style.display = "none";
+        return;
+      }
 
       photoInput._fileToUpload = file;
       savePhotoBtn.style.display = "inline-block";
 
-      if (profileImg) {
-        profileImg.src = URL.createObjectURL(file);
+      // Mobile browsers may not support URL.createObjectURL for all image types
+      try {
+        if (profileImg) {
+          profileImg.src = URL.createObjectURL(file);
+        }
+      } catch (err) {
+        // Fallback: use FileReader for preview
+        if (profileImg) {
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            profileImg.src = ev.target.result;
+          };
+          reader.readAsDataURL(file);
+        }
       }
     });
   }
 
   if (savePhotoBtn) {
     savePhotoBtn.addEventListener("click", async () => {
+      alert("Save Photo button clicked!");
+      console.log("Save Photo button clicked!");
       if (!photoInput || !photoInput._fileToUpload) {
         showToast("No photo selected.", "error");
+        alert("No photo selected or file missing.");
+        console.error("Save Photo Error: No photo selected or file missing.");
         return;
       }
 
@@ -534,12 +564,16 @@ function initProfileControls(user) {
         showToast("Saving photo...", "info", 2000);
 
         const file = photoInput._fileToUpload;
+        alert("File selected: " + (file && file.name ? file.name : "none"));
+        console.log("Save Photo: file selected", file);
         const compressed = await compressImage(file);
+        console.log("Save Photo: compressed result", compressed);
 
         const uploadFile =
           compressed instanceof Blob
             ? new File([compressed], file.name, { type: compressed.type })
             : file;
+        console.log("Save Photo: uploadFile", uploadFile);
 
         // Convert to base64 (works around CORS issues)
         const base64 = await new Promise((resolve, reject) => {
@@ -548,8 +582,16 @@ function initProfileControls(user) {
           reader.onerror = reject;
           reader.readAsDataURL(uploadFile);
         });
+        console.log("Save Photo: base64 string", base64);
 
         if (profileImg) profileImg.src = base64;
+
+        if (!user || !user.uid) {
+          console.error("Save Photo Error: User object or UID missing", user);
+          showToast("User not authenticated.", "error");
+          alert("User not authenticated.");
+          return;
+        }
 
         await setDoc(
           doc(db, "users", user.uid),
@@ -559,17 +601,21 @@ function initProfileControls(user) {
           },
           { merge: true }
         );
+        console.log("Save Photo: setDoc success for UID", user.uid);
 
         delete photoInput._fileToUpload;
         savePhotoBtn.style.display = "none";
 
         showToast("Photo saved successfully!", "success");
+        alert("Photo saved successfully!");
       } catch (err) {
         console.error("Photo upload failed:", err);
         showToast(
           "Failed to save photo: " + (err.message || "Unknown error"),
           "error"
         );
+        alert("Failed to save photo: " + (err.message || "Unknown error"));
+        if (err.stack) console.error("Error stack:", err.stack);
       }
     });
   }

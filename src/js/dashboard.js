@@ -615,12 +615,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   refreshBtn.addEventListener("click", () => {
-    if (!allPlayersPool.length) {
-      fetchPacersPlayers();
-      return;
-    }
-    playersData = pickRandomPlayers(allPlayersPool, 5);
-    displayPlayers(playersData);
+    fetchPacersPlayers();
   });
   const slider = document.querySelector(".slider");
   const quantity = parseInt(
