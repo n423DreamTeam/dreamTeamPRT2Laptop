@@ -6,7 +6,8 @@ import {
   increment,
   serverTimestamp,
 } from "firebase/firestore";
-import { auth, db } from "../../firebase.js";
+import { app, auth, db } from "../../firebase.js";
+import { ensurePushTokenForUser } from "./push-notifications.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const dropZone = document.getElementById("drop-zone");
@@ -16,6 +17,10 @@ document.addEventListener("DOMContentLoaded", () => {
   let pointsVal = document.querySelector("#points-val");
   let assistsVal = document.querySelector("#assists-val");
   const refreshBtn = document.getElementById("refresh-btn");
+  const previewPushBtn = document.getElementById("dashboard-push-preview-btn");
+  const previewPushStatus = document.getElementById(
+    "dashboard-push-preview-status"
+  );
 
   const API_URL =
     window.location.hostname === "localhost"
@@ -31,9 +36,153 @@ document.addEventListener("DOMContentLoaded", () => {
   let goalAssists = 50;
 
   const PROGRESS_KEY = "dt_user_progress_v1";
+  const POP_QUIZ_REWARD = 5000;
+  const POP_QUIZ_LENGTH = 5;
+  const POP_QUIZ_PASS_SCORE = 5;
+  const POP_QUIZ_CLAIM_KEY = "dt_pop_quiz_claims_v1";
+  const POP_QUIZ_QUESTION_BANK = [
+    {
+      prompt:
+        "In a standard NBA game, how many personal fouls disqualify a player?",
+      options: ["5", "6", "7", "8"],
+      correct: "6",
+    },
+    {
+      prompt: "How many seconds can an offensive player stay in the lane?",
+      options: ["2 seconds", "3 seconds", "4 seconds", "5 seconds"],
+      correct: "3 seconds",
+    },
+    {
+      prompt:
+        "Which stat is credited to the player who passes directly to a made basket?",
+      options: ["Steal", "Assist", "Usage", "Deflection"],
+      correct: "Assist",
+    },
+    {
+      prompt: "How many players from one team are on the court at once?",
+      options: ["4", "5", "6", "7"],
+      correct: "5",
+    },
+    {
+      prompt:
+        "What is the value of a made shot from beyond the three-point line?",
+      options: ["1 point", "2 points", "3 points", "4 points"],
+      correct: "3 points",
+    },
+    {
+      prompt: "How long is the NBA shot clock on a new possession?",
+      options: ["20 seconds", "22 seconds", "24 seconds", "30 seconds"],
+      correct: "24 seconds",
+    },
+    {
+      prompt: "Which turnover occurs when a player takes too many steps without dribbling?",
+      options: ["Double dribble", "Carrying", "Traveling", "Backcourt"],
+      correct: "Traveling",
+    },
+    {
+      prompt: "How many periods are played in a regulation NBA game?",
+      options: ["2", "3", "4", "5"],
+      correct: "4",
+    },
+  ];
   let userProgress = { points: 0, wins: 0 };
   let firebaseUser = null;
+  let canUseDashboardPushPreview = false;
   let challengeCompleted = false;
+  let popQuizClaimedToday = false;
+  let popQuizClaimStateLoading = true;
+  const ADMIN_EMAIL_KEYWORDS = ["megan"];
+
+  function getFunctionUrls(functionName) {
+    const projectId = app?.options?.projectId || "";
+    const cloudUrl = `https://us-central1-${projectId}.cloudfunctions.net/${functionName}`;
+    if (window.location.hostname === "localhost") {
+      const emulatorUrl = `http://127.0.0.1:5001/${projectId}/us-central1/${functionName}`;
+      return [emulatorUrl, cloudUrl];
+    }
+    return [cloudUrl];
+  }
+
+  function isNetworkFetchError(error) {
+    const message = String(error?.message || "");
+    return error instanceof TypeError || /failed to fetch|networkerror/i.test(message);
+  }
+
+  async function postFunctionWithFallback(functionName, user, payload) {
+    const idToken = await user.getIdToken();
+    const urls = getFunctionUrls(functionName);
+    let lastError = null;
+
+    for (let index = 0; index < urls.length; index += 1) {
+      const url = urls[index];
+      const isLastAttempt = index === urls.length - 1;
+
+      try {
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${idToken}`,
+          },
+          body: JSON.stringify(payload),
+        });
+
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(result?.error || "Could not send preview push.");
+        }
+
+        return result;
+      } catch (error) {
+        lastError = error;
+        if (!isNetworkFetchError(error) || isLastAttempt) {
+          throw error;
+        }
+      }
+    }
+
+    throw lastError || new Error("Could not send preview push.");
+  }
+
+  function isAdminUser(user, userData = {}) {
+    const roleFlag = userData?.isAdmin || userData?.role === "admin";
+    const email = String(user?.email || "").toLowerCase();
+    const keywordMatch = ADMIN_EMAIL_KEYWORDS.some((keyword) =>
+      email.includes(keyword)
+    );
+    return Boolean(roleFlag || keywordMatch);
+  }
+
+  function updateDashboardPushPreviewUi() {
+    if (!previewPushBtn || !previewPushStatus) return;
+
+    if (!canUseDashboardPushPreview) {
+      previewPushBtn.style.display = "none";
+      previewPushStatus.style.display = "none";
+      previewPushStatus.textContent = "";
+      return;
+    }
+
+    previewPushBtn.style.display = "block";
+    previewPushStatus.style.display = "block";
+    if (!previewPushStatus.textContent) {
+      previewPushStatus.textContent = "Send a preview notification to this account.";
+    }
+  }
+
+  async function sendDashboardPreviewPush() {
+    if (!firebaseUser) throw new Error("Sign in required.");
+    await ensurePushTokenForUser(firebaseUser);
+    return postFunctionWithFallback("adminSendPushTest", firebaseUser, {
+        uid: firebaseUser.uid,
+        title: "DreamTeam Push Preview",
+        body: "This is how your live push notifications will look.",
+        data: {
+          source: "dashboard-preview",
+          path: "/dashboard.html",
+        },
+      });
+  }
 
   function loadProgress() {
     try {
@@ -52,7 +201,264 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  function getTodayStamp() {
+    const now = new Date();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    return `${now.getFullYear()}-${month}-${day}`;
+  }
+
+  function getClaimIdentity(uid) {
+    return uid || null;
+  }
+
+  function setLocalPopQuizClaimDate(uid, dateStamp) {
+    try {
+      const identity = getClaimIdentity(uid);
+      if (!identity) return;
+
+      const raw = localStorage.getItem(POP_QUIZ_CLAIM_KEY);
+      const parsed = raw ? JSON.parse(raw) : {};
+      const claimsByUser = parsed?.claimsByUser || {};
+
+      if (dateStamp) {
+        claimsByUser[identity] = dateStamp;
+      } else {
+        delete claimsByUser[identity];
+      }
+
+      localStorage.setItem(
+        POP_QUIZ_CLAIM_KEY,
+        JSON.stringify({ claimsByUser })
+      );
+    } catch (e) {
+      console.warn("Could not update local pop quiz claim state:", e);
+    }
+  }
+
+  function loadPopQuizClaimState(uid) {
+    try {
+      const raw = localStorage.getItem(POP_QUIZ_CLAIM_KEY);
+      if (!raw) {
+        popQuizClaimedToday = false;
+        return;
+      }
+
+      const parsed = JSON.parse(raw);
+      const identity = getClaimIdentity(uid);
+
+      if (!identity) {
+        popQuizClaimedToday = false;
+        return;
+      }
+
+      // Backward compatibility: previous format stored only one global date.
+      if (parsed?.lastClaimedDate) {
+        popQuizClaimedToday = false;
+        return;
+      }
+
+      const claimsByUser = parsed?.claimsByUser || {};
+      popQuizClaimedToday = claimsByUser[identity] === getTodayStamp();
+    } catch (e) {
+      console.warn("Could not load pop quiz claim state:", e);
+      popQuizClaimedToday = false;
+    }
+  }
+
+  function markPopQuizClaimedToday(uid) {
+    setLocalPopQuizClaimDate(uid, getTodayStamp());
+    popQuizClaimedToday = true;
+  }
+
+  function updatePopQuizUi() {
+    const quizBtn = document.getElementById("pop-quiz-btn");
+    const quizStatus = document.getElementById("pop-quiz-status");
+    if (!quizBtn || !quizStatus) return;
+
+    if (popQuizClaimStateLoading) {
+      quizBtn.disabled = true;
+      quizBtn.textContent = "⏳ Syncing Quiz";
+      quizStatus.textContent = "Syncing your quiz bonus status...";
+      return;
+    }
+
+    if (popQuizClaimedToday) {
+      quizBtn.disabled = true;
+      quizBtn.textContent = "✅ Bonus Claimed";
+      quizStatus.textContent = "You already earned your 5,000 quiz points today.";
+    } else {
+      quizBtn.disabled = false;
+      quizBtn.textContent = "🧠 Pop Quiz (+5000)";
+      quizStatus.textContent = "Answer 5 hard questions and score a perfect 5/5 for the 5,000 point bonus.";
+    }
+  }
+
+  function openPopQuizModal() {
+    if (popQuizClaimStateLoading) {
+      updatePopQuizUi();
+      return;
+    }
+
+    if (popQuizClaimedToday) {
+      updatePopQuizUi();
+      return;
+    }
+
+    const selectedQuestions = [...POP_QUIZ_QUESTION_BANK]
+      .sort(() => Math.random() - 0.5)
+      .slice(0, POP_QUIZ_LENGTH);
+
+    let currentIndex = 0;
+    let correctAnswers = 0;
+
+    const modal = document.createElement("div");
+    modal.style.cssText = `
+      position: fixed; inset: 0; z-index: 10000;
+      background: rgba(3, 8, 29, 0.8);
+      display: flex; align-items: center; justify-content: center;
+      padding: 1rem;
+    `;
+
+    const card = document.createElement("div");
+    card.style.cssText = `
+      width: min(560px, 100%);
+      background: linear-gradient(145deg, rgba(22, 36, 97, 0.98), rgba(13, 22, 62, 0.98));
+      border: 1px solid rgba(255, 203, 5, 0.45);
+      border-radius: 16px;
+      color: #fff;
+      padding: 1.5rem;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+      font-family: Arial, sans-serif;
+    `;
+
+    card.innerHTML = `
+      <h3 style="margin: 0 0 0.5rem 0; color: #ffcb05; font-size: 1.6rem;">Pop Quiz</h3>
+      <p style="margin: 0 0 0.4rem 0; color: rgba(255,255,255,0.88);">
+        Answer ${POP_QUIZ_LENGTH} questions. Score at least ${POP_QUIZ_PASS_SCORE}/${POP_QUIZ_LENGTH} to earn
+        <strong style="color:#ffcb05;">+${POP_QUIZ_REWARD}</strong> points.
+      </p>
+      <p id="quiz-progress" style="margin: 0 0 1rem 0; color: rgba(255,255,255,0.75); font-size: 0.95rem;"></p>
+      <p id="quiz-prompt" style="margin: 0 0 1rem 0; font-size: 1.1rem; line-height: 1.4;"></p>
+      <div class="quiz-options" style="display: grid; gap: 0.7rem;"></div>
+      <p id="quiz-feedback" style="min-height: 1.4em; margin: 1rem 0 0; font-weight: 700;"></p>
+      <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
+        <button id="quiz-close-btn" type="button" style="background: rgba(255,255,255,0.12); color: #fff; border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; padding: 0.55rem 0.9rem; cursor: pointer;">Close</button>
+      </div>
+    `;
+
+    modal.appendChild(card);
+    document.body.appendChild(modal);
+
+    const optionsWrap = card.querySelector(".quiz-options");
+    const progressEl = card.querySelector("#quiz-progress");
+    const promptEl = card.querySelector("#quiz-prompt");
+    const feedback = card.querySelector("#quiz-feedback");
+    const closeBtn = card.querySelector("#quiz-close-btn");
+
+    function renderQuizQuestion() {
+      const activeQuestion = selectedQuestions[currentIndex];
+      progressEl.textContent = `Question ${currentIndex + 1} of ${POP_QUIZ_LENGTH}`;
+      promptEl.textContent = activeQuestion.prompt;
+      feedback.textContent = "";
+      optionsWrap.innerHTML = "";
+
+      activeQuestion.options.forEach((opt) => {
+        const optionBtn = document.createElement("button");
+        optionBtn.type = "button";
+        optionBtn.textContent = opt;
+        optionBtn.style.cssText = `
+          text-align: left;
+          background: rgba(255, 255, 255, 0.08);
+          color: #fff;
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          border-radius: 10px;
+          padding: 0.75rem 0.9rem;
+          cursor: pointer;
+          font-size: 0.98rem;
+        `;
+
+        optionBtn.addEventListener("click", () => {
+          const isCorrect = opt === activeQuestion.correct;
+          if (isCorrect) {
+            correctAnswers += 1;
+            feedback.textContent = "Correct.";
+            feedback.style.color = "#7dffae";
+            optionBtn.style.borderColor = "#7dffae";
+            optionBtn.style.background = "rgba(125, 255, 174, 0.2)";
+          } else {
+            feedback.textContent = `Incorrect. Correct answer: ${activeQuestion.correct}`;
+            feedback.style.color = "#ff9f9f";
+            optionBtn.style.borderColor = "#ff9f9f";
+            optionBtn.style.background = "rgba(255, 121, 121, 0.18)";
+          }
+
+          optionsWrap.querySelectorAll("button").forEach((btn) => {
+            btn.disabled = true;
+            btn.style.opacity = "0.8";
+            if (btn.textContent === activeQuestion.correct) {
+              btn.style.borderColor = "#7dffae";
+            }
+          });
+
+          setTimeout(() => {
+            currentIndex += 1;
+            if (currentIndex < POP_QUIZ_LENGTH) {
+              renderQuizQuestion();
+              return;
+            }
+
+            optionsWrap.innerHTML = "";
+            progressEl.textContent = `Final Score: ${correctAnswers}/${POP_QUIZ_LENGTH}`;
+
+            if (correctAnswers >= POP_QUIZ_PASS_SCORE) {
+              userProgress.points += POP_QUIZ_REWARD;
+              saveProgress();
+              renderUserPointsHud();
+              markPopQuizClaimedToday(firebaseUser?.uid);
+              syncPopQuizClaimToFirestore(firebaseUser?.uid);
+              updatePopQuizUi();
+              showRewardToast(POP_QUIZ_REWARD);
+              syncProgressToFirestore({
+                pointsDelta: POP_QUIZ_REWARD,
+                winIncrement: 0,
+                perfectChallengeAchieved: false,
+              });
+
+              if (playersData.length) {
+                displayPlayers(playersData);
+              }
+
+              promptEl.textContent = "Quiz complete.";
+              feedback.textContent = `You passed and earned +${POP_QUIZ_REWARD} points.`;
+              feedback.style.color = "#7dffae";
+            } else {
+              promptEl.textContent = "Quiz complete.";
+              feedback.textContent = `You need ${POP_QUIZ_PASS_SCORE}/${POP_QUIZ_LENGTH} to pass. Try again tomorrow.`;
+              feedback.style.color = "#ff9f9f";
+            }
+          }, 700);
+        });
+
+        optionsWrap.appendChild(optionBtn);
+      });
+    }
+
+    renderQuizQuestion();
+
+    closeBtn.addEventListener("click", () => {
+      modal.remove();
+    });
+
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) {
+        modal.remove();
+      }
+    });
+  }
+
   loadProgress();
+  loadPopQuizClaimState();
 
   async function hydrateProgressFromFirestore(user) {
     if (!db || !user) return;
@@ -63,11 +469,38 @@ document.addEventListener("DOMContentLoaded", () => {
         userProgress.points = data.points ?? userProgress.points;
         userProgress.wins =
           data.challengesCompleted ?? data.wins ?? userProgress.wins;
+
+        const claimedStamp = data.popQuizLastClaimedDate;
+        if (typeof claimedStamp === "string") {
+          popQuizClaimedToday = claimedStamp === getTodayStamp();
+          setLocalPopQuizClaimDate(user.uid, claimedStamp);
+        }
+
         saveProgress();
         renderUserPointsHud();
+        updatePopQuizUi();
+        return data;
       }
     } catch (e) {
       console.warn("Could not hydrate progress from Firestore", e);
+    }
+    return {};
+  }
+
+  async function syncPopQuizClaimToFirestore(uid) {
+    if (!db || !uid) return;
+    try {
+      await setDoc(
+        doc(db, "users", uid),
+        {
+          popQuizLastClaimedDate: getTodayStamp(),
+          popQuizLastClaimedAt: serverTimestamp(),
+          lastPlayedAt: serverTimestamp(),
+        },
+        { merge: true }
+      );
+    } catch (e) {
+      console.warn("Could not sync pop quiz claim to Firestore", e);
     }
   }
 
@@ -130,6 +563,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   renderUserPointsHud();
+  updatePopQuizUi();
 
   function showRewardToast(points) {
     const toast = document.createElement("div");
@@ -180,11 +614,23 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 4000);
   }
 
-  onAuthStateChanged(auth, (user) => {
+  onAuthStateChanged(auth, async (user) => {
     firebaseUser = user;
+    popQuizClaimStateLoading = true;
+    updatePopQuizUi();
+    loadPopQuizClaimState(user?.uid);
+
     if (user) {
-      hydrateProgressFromFirestore(user);
+      const userData = await hydrateProgressFromFirestore(user);
+      canUseDashboardPushPreview = isAdminUser(user, userData);
+    } else {
+      popQuizClaimedToday = false;
+      canUseDashboardPushPreview = false;
     }
+
+    popQuizClaimStateLoading = false;
+    updatePopQuizUi();
+    updateDashboardPushPreviewUi();
   });
 
   function generateDailyChallenge() {
@@ -625,6 +1071,33 @@ document.addEventListener("DOMContentLoaded", () => {
   refreshBtn.addEventListener("click", () => {
     fetchPacersPlayers();
   });
+
+  const popQuizBtn = document.getElementById("pop-quiz-btn");
+  if (popQuizBtn) {
+    popQuizBtn.addEventListener("click", openPopQuizModal);
+  }
+
+  if (previewPushBtn && previewPushStatus) {
+    previewPushBtn.addEventListener("click", async () => {
+      if (!canUseDashboardPushPreview) return;
+      const originalLabel = previewPushBtn.textContent;
+      previewPushBtn.disabled = true;
+      previewPushBtn.textContent = "Sending...";
+      previewPushStatus.textContent = "Sending preview push...";
+      try {
+        const result = await sendDashboardPreviewPush();
+        previewPushStatus.textContent = `Preview sent. Success: ${
+          result.successCount || 0
+        }, Failed: ${result.failureCount || 0}.`;
+      } catch (error) {
+        previewPushStatus.textContent =
+          error?.message || "Could not send preview push.";
+      } finally {
+        previewPushBtn.disabled = false;
+        previewPushBtn.textContent = originalLabel;
+      }
+    });
+  }
   const slider = document.querySelector(".slider");
   const quantity = parseInt(
     getComputedStyle(slider).getPropertyValue("--quantity")

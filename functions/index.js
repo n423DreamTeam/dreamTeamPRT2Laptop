@@ -1,6 +1,12 @@
 const { onRequest } = require("firebase-functions/v2/https");
+const { onSchedule } = require("firebase-functions/v2/scheduler");
 const { setGlobalOptions } = require("firebase-functions/v2");
 const https = require("https");
+const admin = require("firebase-admin");
+
+if (!admin.apps.length) {
+  admin.initializeApp();
+}
 
 // Use 2nd gen with fixed region
 setGlobalOptions({ region: "us-central1" });
@@ -86,6 +92,56 @@ function sendJson(res, status, body) {
   res.set("Access-Control-Allow-Methods", "GET, OPTIONS");
   res.set("Access-Control-Allow-Headers", "Content-Type");
   res.status(status).json(body);
+}
+
+function sendPushJson(res, status, body) {
+  res.set("Access-Control-Allow-Origin", "*");
+  res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.set(
+    "Access-Control-Allow-Headers",
+    "Content-Type, X-Admin-Key, Authorization"
+  );
+  res.status(status).json(body);
+}
+
+function sendAuthJson(res, status, body) {
+  res.set("Access-Control-Allow-Origin", "*");
+  res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.status(status).json(body);
+}
+
+function getRemovableTokenErrors() {
+  return new Set([
+    "messaging/registration-token-not-registered",
+    "messaging/invalid-registration-token",
+    "messaging/invalid-argument",
+  ]);
+}
+
+function getBearerToken(req) {
+  const authHeader = req.get("authorization") || "";
+  const prefix = "bearer ";
+  if (!authHeader.toLowerCase().startsWith(prefix)) return null;
+  return authHeader.slice(prefix.length).trim();
+}
+
+async function verifyRequestAuth(req) {
+  const token = getBearerToken(req);
+  if (!token) {
+    throw new Error("UNAUTHENTICATED");
+  }
+  return admin.auth().verifyIdToken(token);
+}
+
+function isAdminEmail(email) {
+  const allowed = String(process.env.PUSH_ADMIN_EMAILS || "")
+    .split(",")
+    .map((entry) => entry.trim().toLowerCase())
+    .filter(Boolean);
+
+  if (!allowed.length) return false;
+  return allowed.includes(String(email || "").toLowerCase());
 }
 
 // -----------------------------
@@ -365,3 +421,306 @@ exports.api = onRequest(async (req, res) => {
     return sendJson(res, 500, { error: err?.message || String(err) });
   }
 });
+
+exports.sendPush = onRequest(async (req, res) => {
+  if (req.method === "OPTIONS") {
+    return sendPushJson(res, 200, {});
+  }
+
+  if (req.method !== "POST") {
+    return sendPushJson(res, 405, { error: "Method not allowed" });
+  }
+
+  const adminKey = process.env.PUSH_ADMIN_KEY;
+  const providedKey = req.get("x-admin-key");
+  if (!adminKey || providedKey !== adminKey) {
+    return sendPushJson(res, 403, { error: "Forbidden" });
+  }
+
+  const uid = String(req.body?.uid || "").trim();
+  const title = String(req.body?.title || "DreamTeam Update").trim();
+  const body = String(req.body?.body || "You have a new update.").trim();
+  const rawData = req.body?.data && typeof req.body.data === "object"
+    ? req.body.data
+    : {};
+
+  if (!uid) {
+    return sendPushJson(res, 400, { error: "uid is required" });
+  }
+
+  try {
+    const userRef = admin.firestore().doc(`users/${uid}`);
+    const userSnap = await userRef.get();
+    if (!userSnap.exists) {
+      return sendPushJson(res, 404, { error: "User not found" });
+    }
+
+    const userData = userSnap.data() || {};
+    const tokens = Array.isArray(userData.fcmTokens)
+      ? userData.fcmTokens.filter((token) => typeof token === "string" && token.length > 20)
+      : [];
+
+    if (!tokens.length) {
+      return sendPushJson(res, 400, { error: "No registered push tokens for this user" });
+    }
+
+    const message = {
+      tokens,
+      notification: { title, body },
+      data: Object.fromEntries(
+        Object.entries(rawData).map(([key, value]) => [key, String(value)])
+      ),
+    };
+
+    const result = await admin.messaging().sendEachForMulticast(message);
+
+    const removableErrors = getRemovableTokenErrors();
+    const invalidTokens = [];
+    result.responses.forEach((response, index) => {
+      if (!response.success) {
+        const code = response.error?.code || "";
+        if (removableErrors.has(code)) {
+          invalidTokens.push(tokens[index]);
+        }
+      }
+    });
+
+    if (invalidTokens.length) {
+      const cleaned = tokens.filter((token) => !invalidTokens.includes(token));
+      await userRef.set(
+        {
+          fcmTokens: cleaned,
+          pushUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        },
+        { merge: true }
+      );
+    }
+
+    return sendPushJson(res, 200, {
+      successCount: result.successCount,
+      failureCount: result.failureCount,
+      prunedTokens: invalidTokens.length,
+    });
+  } catch (error) {
+    console.error("sendPush failed", error);
+    return sendPushJson(res, 500, { error: "Push send failed" });
+  }
+});
+
+exports.registerPushToken = onRequest(async (req, res) => {
+  if (req.method === "OPTIONS") {
+    return sendAuthJson(res, 200, {});
+  }
+
+  if (req.method !== "POST") {
+    return sendAuthJson(res, 405, { error: "Method not allowed" });
+  }
+
+  try {
+    const decoded = await verifyRequestAuth(req);
+    const token = String(req.body?.token || "").trim();
+
+    if (!token || token.length < 20) {
+      return sendAuthJson(res, 400, { error: "token is required" });
+    }
+
+    const userRef = admin.firestore().doc(`users/${decoded.uid}`);
+    await userRef.set(
+      {
+        pushPermission: "granted",
+        pushEnabled: true,
+        fcmTokens: admin.firestore.FieldValue.arrayUnion(token),
+        pushTokenPending: admin.firestore.FieldValue.delete(),
+        pushUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      },
+      { merge: true }
+    );
+
+    return sendAuthJson(res, 200, { ok: true });
+  } catch (error) {
+    if (error?.message === "UNAUTHENTICATED") {
+      return sendAuthJson(res, 401, { error: "Unauthenticated" });
+    }
+    console.error("registerPushToken failed", error);
+    return sendAuthJson(res, 500, { error: "Push token registration failed" });
+  }
+});
+
+exports.adminSendPushTest = onRequest(async (req, res) => {
+  if (req.method === "OPTIONS") {
+    return sendAuthJson(res, 200, {});
+  }
+
+  if (req.method !== "POST") {
+    return sendAuthJson(res, 405, { error: "Method not allowed" });
+  }
+
+  try {
+    const decoded = await verifyRequestAuth(req);
+    if (!isAdminEmail(decoded.email)) {
+      return sendAuthJson(res, 403, { error: "Admin access required" });
+    }
+
+    const targetUid = String(req.body?.uid || decoded.uid).trim();
+    const title = String(req.body?.title || "DreamTeam Test").trim();
+    const body = String(req.body?.body || "Push test notification.").trim();
+    const rawData = req.body?.data && typeof req.body.data === "object"
+      ? req.body.data
+      : {};
+
+    const userRef = admin.firestore().doc(`users/${targetUid}`);
+    const userSnap = await userRef.get();
+    if (!userSnap.exists) {
+      return sendAuthJson(res, 404, { error: "User not found" });
+    }
+
+    const userData = userSnap.data() || {};
+    const tokens = Array.isArray(userData.fcmTokens)
+      ? userData.fcmTokens.filter((token) => typeof token === "string" && token.length > 20)
+      : [];
+
+    const pendingToken = typeof userData.pushTokenPending === "string" && userData.pushTokenPending.length > 20
+      ? userData.pushTokenPending
+      : "";
+
+    if (!tokens.length && pendingToken) {
+      tokens.push(pendingToken);
+      await userRef.set(
+        {
+          fcmTokens: admin.firestore.FieldValue.arrayUnion(pendingToken),
+          pushEnabled: true,
+          pushTokenPending: admin.firestore.FieldValue.delete(),
+          pushUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        },
+        { merge: true }
+      );
+    }
+
+    if (!tokens.length) {
+      return sendAuthJson(res, 400, { error: "No registered push tokens for this user" });
+    }
+
+    const result = await admin.messaging().sendEachForMulticast({
+      tokens,
+      notification: { title, body },
+      data: Object.fromEntries(
+        Object.entries(rawData).map(([key, value]) => [key, String(value)])
+      ),
+    });
+
+    const removableErrors = getRemovableTokenErrors();
+    const invalidTokens = [];
+    result.responses.forEach((response, index) => {
+      if (!response.success) {
+        const code = response.error?.code || "";
+        if (removableErrors.has(code)) {
+          invalidTokens.push(tokens[index]);
+        }
+      }
+    });
+
+    if (invalidTokens.length) {
+      const cleaned = tokens.filter((token) => !invalidTokens.includes(token));
+      await userRef.set(
+        {
+          fcmTokens: cleaned,
+          pushEnabled: cleaned.length > 0,
+          pushUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        },
+        { merge: true }
+      );
+    }
+
+    return sendAuthJson(res, 200, {
+      successCount: result.successCount,
+      failureCount: result.failureCount,
+      prunedTokens: invalidTokens.length,
+    });
+  } catch (error) {
+    if (error?.message === "UNAUTHENTICATED") {
+      return sendAuthJson(res, 401, { error: "Unauthenticated" });
+    }
+    console.error("adminSendPushTest failed", error);
+    return sendAuthJson(res, 500, { error: "Push send failed" });
+  }
+});
+
+exports.sendDailyChallengePush = onSchedule(
+  {
+    schedule: "0 11 * * *",
+    timeZone: "America/Indiana/Indianapolis",
+  },
+  async () => {
+    try {
+      const usersSnap = await admin
+        .firestore()
+        .collection("users")
+        .where("pushPermission", "==", "granted")
+        .get();
+
+      let targetedUsers = 0;
+      let sent = 0;
+      let failed = 0;
+
+      const removableErrors = getRemovableTokenErrors();
+
+      for (const userDoc of usersSnap.docs) {
+        const data = userDoc.data() || {};
+        const tokens = Array.isArray(data.fcmTokens)
+          ? data.fcmTokens.filter((token) => typeof token === "string" && token.length > 20)
+          : [];
+
+        if (!tokens.length) {
+          continue;
+        }
+
+        targetedUsers += 1;
+
+        const result = await admin.messaging().sendEachForMulticast({
+          tokens,
+          notification: {
+            title: "New Daily Challenge is Live",
+            body: "Set your lineup now and earn more DreamTeam points.",
+          },
+          data: {
+            type: "daily-challenge",
+            path: "/dashboard.html",
+          },
+        });
+
+        sent += result.successCount;
+        failed += result.failureCount;
+
+        const invalidTokens = [];
+        result.responses.forEach((response, index) => {
+          if (!response.success) {
+            const code = response.error?.code || "";
+            if (removableErrors.has(code)) {
+              invalidTokens.push(tokens[index]);
+            }
+          }
+        });
+
+        if (invalidTokens.length) {
+          const cleaned = tokens.filter((token) => !invalidTokens.includes(token));
+          await userDoc.ref.set(
+            {
+              fcmTokens: cleaned,
+              pushEnabled: cleaned.length > 0,
+              pushUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            },
+            { merge: true }
+          );
+        }
+      }
+
+      console.log("Daily push summary", {
+        targetedUsers,
+        sent,
+        failed,
+      });
+    } catch (error) {
+      console.error("sendDailyChallengePush failed", error);
+    }
+  }
+);

@@ -30,7 +30,8 @@ html {
 }
 
 body.dashboard-body {
-  background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
     url("/src/images/background.jpeg") no-repeat top/cover;
   background-color: rgba(10, 15, 45);
   color: white;
@@ -51,7 +52,8 @@ body.dashboard-body {
   }
 
   body.dashboard-body {
-    background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+    background:
+      linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
       url("/src/images/background.jpeg") no-repeat top/cover;
     background-color: rgba(10, 15, 45);
     color: $text-light;
@@ -287,7 +289,8 @@ body.dashboard-body {
       max-width: 640px;
       margin: -0.25rem auto 2.25rem;
       text-align: left;
-      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35),
+      box-shadow:
+        0 8px 28px rgba(0, 0, 0, 0.35),
         0 0 18px rgba(255, 203, 5, 0.15);
       backdrop-filter: blur(6px);
 
@@ -1127,5 +1130,71 @@ body.dashboard-body {
         font-size: 0.7rem;
       }
     }
+  }
+}
+
+.pop-quiz-controls {
+  margin-top: 0.85rem;
+  display: grid;
+  gap: 0.45rem;
+
+  .pop-quiz {
+    width: 100%;
+    border: 1px solid rgba(255, 203, 5, 0.45);
+    background: linear-gradient(
+      140deg,
+      rgba(255, 203, 5, 0.95),
+      rgba(255, 178, 0, 0.95)
+    );
+    color: #131313;
+    font-weight: 900;
+    letter-spacing: 0.35px;
+    border-radius: 999px;
+    padding: 0.7rem 1rem;
+    cursor: pointer;
+    text-transform: uppercase;
+
+    &:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+  }
+
+  .push-preview {
+    width: 100%;
+    border: 1px solid rgba(125, 255, 174, 0.5);
+    background: linear-gradient(
+      140deg,
+      rgba(34, 197, 94, 0.9),
+      rgba(21, 128, 61, 0.92)
+    );
+    color: #ecfdf5;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    border-radius: 999px;
+    padding: 0.65rem 1rem;
+    cursor: pointer;
+    text-transform: uppercase;
+
+    &:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+  }
+
+  .push-preview-status {
+    margin: 0;
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.78);
+    text-align: center;
+    line-height: 1.3;
+  }
+
+  .pop-quiz-status {
+    margin: 0;
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.75);
+    text-align: center;
+    line-height: 1.3;
   }
 }

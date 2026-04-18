@@ -14,6 +14,7 @@ import {
   sendPasswordResetEmail,
 } from "firebase/auth";
 import { app } from "../firebase.js";
+import { initPushNotifications } from "./js/push-notifications.js";
 const auth = getAuth(app);
 
 function showToastNotification(
@@ -68,6 +69,9 @@ function showToastNotification(
 onAuthStateChanged(auth, (user) => {
   if (user) {
     console.log("User is signed in:", user.email, user.displayName);
+    initPushNotifications(user).catch((error) => {
+      console.warn("Push notifications initialization skipped", error);
+    });
     const path = window.location.pathname;
     if (path.includes("index.html") || path === "/") {
       showToastNotification("NEW DAILY CHALLENGE!", "🎯");

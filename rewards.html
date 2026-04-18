@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -63,6 +63,11 @@
     </header>
 
     <main class="rewards-main">
+      <section class="points-hero" aria-label="Current Points">
+        <p class="points-hero-label">YOUR POINTS</p>
+        <p class="points-hero-value"><span id="user-points-hero">0</span></p>
+      </section>
+
       <section class="rewards-header">
         <h1>REWARDS:</h1>
         <div class="daily">
@@ -93,6 +98,79 @@
         >
           Loading next milestone...
         </div>
+
+        <section class="fan-perks" aria-labelledby="fan-perks-title">
+          <div class="fan-perks-head">
+            <h3 id="fan-perks-title">Fan Perks Store</h3>
+            <p>Use points for Pacers merch discounts and fan-only drops.</p>
+          </div>
+          <div id="perks-grid" class="perks-grid"></div>
+          <div
+            id="perk-feedback"
+            class="perk-feedback"
+            aria-live="polite"
+          ></div>
+          <section
+            id="merch-receipt"
+            class="merch-receipt"
+            style="display: none"
+          >
+            <h4>Pacers Store 5% Receipt</h4>
+            <p class="receipt-code-wrap">
+              Code: <strong id="receipt-code">-</strong>
+            </p>
+            <p id="receipt-date" class="receipt-date"></p>
+            <div class="receipt-qr-wrap">
+              <img id="receipt-qr" alt="Discount QR Code" />
+            </div>
+            <div class="receipt-actions">
+              <button id="download-receipt-btn" type="button">
+                Download Receipt
+              </button>
+              <button id="download-qr-btn" type="button">Download QR</button>
+            </div>
+          </section>
+          <div class="redemption-history">
+            <h4>Recent Redemptions</h4>
+            <ul id="redemption-list"></ul>
+          </div>
+          <section id="admin-export" class="admin-export" style="display: none">
+            <div class="admin-export-head">
+              <div class="admin-headline-row">
+                <h4>Admin Fulfillment Export</h4>
+                <span class="admin-badge">ADMIN</span>
+              </div>
+              <p>
+                Download all redeemed codes for order support and raffle ops.
+              </p>
+            </div>
+            <button id="export-csv-btn" class="export-csv-btn" type="button">
+              Download Redemption CSV
+            </button>
+            <p id="admin-export-status" class="admin-export-status"></p>
+            <div class="admin-push-fields">
+              <label for="admin-push-title">Push Title</label>
+              <input
+                id="admin-push-title"
+                type="text"
+                maxlength="80"
+                value="DreamTeam Admin Test"
+              />
+              <label for="admin-push-body">Push Message</label>
+              <textarea id="admin-push-body" rows="3" maxlength="180">
+Push notifications are working for your account.</textarea
+              >
+            </div>
+            <button
+              id="send-test-push-btn"
+              class="send-test-push-btn"
+              type="button"
+            >
+              Send Test Push
+            </button>
+            <p id="admin-push-status" class="admin-push-status"></p>
+          </section>
+        </section>
 
         <div class="badges-grid"></div>
       </section>
@@ -212,6 +290,79 @@
             "
           >
             Close
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="redeem-confirm-modal"
+      style="
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.72);
+        justify-content: center;
+        align-items: center;
+        z-index: 10020;
+      "
+    >
+      <div
+        style="
+          background: #0f172a;
+          border: 1px solid #334155;
+          border-radius: 16px;
+          padding: 1.5rem;
+          max-width: 460px;
+          width: 92%;
+          color: #e2e8f0;
+          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45);
+        "
+      >
+        <h3 id="redeem-modal-title" style="margin: 0 0 0.5rem; color: #ffcb05">
+          Confirm Redemption
+        </h3>
+        <p
+          id="redeem-modal-desc"
+          style="margin: 0 0 0.8rem; color: #cbd5e1"
+        ></p>
+        <p id="redeem-modal-limit" style="margin: 0; color: #94a3b8"></p>
+        <div
+          style="
+            margin-top: 1.1rem;
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.55rem;
+          "
+        >
+          <button
+            id="redeem-modal-cancel"
+            type="button"
+            style="
+              background: #1e293b;
+              border: 1px solid #334155;
+              color: #e2e8f0;
+              border-radius: 10px;
+              padding: 0.55rem 0.95rem;
+              cursor: pointer;
+            "
+          >
+            Cancel
+          </button>
+          <button
+            id="redeem-modal-confirm"
+            type="button"
+            style="
+              background: linear-gradient(135deg, #ffcb05, #ffd166);
+              border: none;
+              color: #0b1839;
+              border-radius: 10px;
+              padding: 0.55rem 0.95rem;
+              font-weight: 800;
+              cursor: pointer;
+            "
+          >
+            Confirm Spend
           </button>
         </div>
       </div>

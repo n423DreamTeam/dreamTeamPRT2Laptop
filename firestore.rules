@@ -3,9 +3,24 @@ service cloud.firestore {
   match /databases/{database}/documents {
     // users collection: only the authenticated owner may read or write their document
     match /users/{userId} {
+      function isOwner() {
+        return request.auth != null && request.auth.uid == userId;
+      }
+
+      function serverManagedFieldsUnchanged() {
+        let managed = ["fcmTokens", "pushEnabled"];
+        return !request.resource.data.keys().hasAny(managed) ||
+          (
+            resource != null &&
+            request.resource.data.fcmTokens == resource.data.fcmTokens &&
+            request.resource.data.pushEnabled == resource.data.pushEnabled
+          );
+      }
+
       // Allow reads for leaderboard visibility; restrict writes to owner
       allow read: if true;
-      allow write: if request.auth != null && request.auth.uid == userId;
+      allow create, update: if isOwner() && serverManagedFieldsUnchanged();
+      allow delete: if isOwner();
     }
 
     // messages collection: authenticated users can create messages; everyone can read
