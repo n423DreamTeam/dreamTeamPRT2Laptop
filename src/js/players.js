@@ -2,20 +2,20 @@ import haliImg from "../images/hali.avif";
 import siakamImg from "../images/siakam.png";
 import drewImg from "../images/drew.webp";
 import neismithImg from "../images/neismith.png";
-import mathurinImg from "../images/mathurin.avif";
 import tjImg from "../images/tj.webp";
 import huffImg from "../images/huff.avif";
 import obiImg from "../images/obi.webp";
 import shepImg from "../images/shep.webp";
 import jaraceImg from "../images/jarace.avif";
-import jacksonImg from "../images/jackson.png";
 import furphImg from "../images/furph.avif";
 import peterImg from "../images/peter.avif";
 import kamImg from "../images/kam.png";
 import bradleyImg from "../images/bradley.webp";
-import jreImg from "../images/jre.png";
 import quentonImg from "../images/quenton.avif";
 import ethanImg from "../images/ethan.webp";
+import potterImg from "../images/potter.png";
+import kobeImg from "../images/kobe.png";
+import zubacImg from "../images/zubac.png";
 import pacersLogo from "../images/pacerslogo.png";
 import reggieAndSiakam from "../images/reggieandsiakam.png";
 
@@ -69,6 +69,31 @@ const players = [
     logo: reggieAndSiakam,
   },
   {
+    id: "ivica-zubac",
+    name: "Ivica Zubac",
+    number: 40,
+    image: zubacImg,
+    position: "Center",
+    stats: {
+      points: 16.8,
+      rebounds: 12.6,
+      assists: 2.6,
+      steals: 0.7,
+      blocks: 1.1,
+      fg: "62.8%",
+      threeP: "0.0%",
+      ft: "66.8%",
+    },
+    height: "7'0\"",
+    weight: "240 lbs",
+    age: 28,
+    college: "KK Cibona (Croatia)",
+    draft: "2016: 2nd Rd. 32nd",
+    experience: "9 years",
+    achievements: ["Eurobasket Bronze Medal [2022]"],
+    logo: pacersLogo,
+  },
+  {
     id: "andrew-nembhard",
     name: "Andrew Nembhard",
     number: 2,
@@ -117,33 +142,6 @@ const players = [
     draft: "2020: 1st Rd. 14th",
     experience: "4 years",
     achievements: ["SEC Freshman of the Year [2019]"],
-    logo: pacersLogo,
-  },
-  {
-    id: "benedict-mathurin",
-    name: "Benedict Mathurin",
-    number: "00",
-    image: mathurinImg,
-    position: "Guard",
-    stats: {
-      points: 14.5,
-      rebounds: 3.7,
-      assists: 2.0,
-      steals: 0.8,
-      fg: "45.9%",
-      threeP: "35.8%",
-      ft: "78.2%",
-    },
-    height: "6'6\"",
-    weight: "210 lbs",
-    age: 22,
-    college: "Arizona",
-    draft: "2022: 1st Rd. 6th",
-    experience: "2 years",
-    achievements: [
-      "NBA All-Rookie Second Team [2023]",
-      "Pac-12 Player of the Year [2022]",
-    ],
     logo: pacersLogo,
   },
   {
@@ -244,6 +242,30 @@ const players = [
     logo: pacersLogo,
   },
   {
+    id: "kobe-brown",
+    name: "Kobe Brown",
+    number: 21,
+    image: kobeImg,
+    position: "Forward",
+    stats: {
+      points: 5.5,
+      rebounds: 2.6,
+      assists: 1.2,
+      steals: 0.5,
+      fg: "46.5%",
+      threeP: "35.0%",
+      ft: "73.0%",
+    },
+    height: "6'7\"",
+    weight: "250 lbs",
+    age: 25,
+    college: "Missouri",
+    draft: "2023: 1st Rd. 30th",
+    experience: "2 years",
+    achievements: ["All-SEC First Team [2023]"],
+    logo: pacersLogo,
+  },
+  {
     id: "jarace-walker",
     name: "Jarace Walker",
     number: 5,
@@ -265,31 +287,6 @@ const players = [
     draft: "2023: 1st Rd. 8th",
     experience: "1 year",
     achievements: ["AAC All-Rookie Team [2023]"],
-    logo: pacersLogo,
-  },
-  {
-    id: "isaiah-jackson",
-    name: "Isaiah Jackson",
-    number: 22,
-    image: jacksonImg,
-    position: "Forward",
-    stats: {
-      points: 8.2,
-      rebounds: 5.7,
-      assists: 1.0,
-      steals: 0.6,
-      blocks: 2.1,
-      fg: "63.0%",
-      threeP: "0%",
-      ft: "70.0%",
-    },
-    height: "6'8\"",
-    weight: "205 lbs",
-    age: 23,
-    college: "Kentucky",
-    draft: "2021: 1st Rd. 22nd",
-    experience: "4 years",
-    achievements: ["SEC All-Freshman Team [2021]"],
     logo: pacersLogo,
   },
   {
@@ -341,6 +338,31 @@ const players = [
     logo: pacersLogo,
   },
   {
+    id: "micah-potter",
+    name: "Micah Potter",
+    number: 15,
+    image: potterImg,
+    position: "Center",
+    stats: {
+      points: 3.4,
+      rebounds: 2.2,
+      assists: 0.5,
+      steals: 0.2,
+      blocks: 0.6,
+      fg: "49.0%",
+      threeP: "31.0%",
+      ft: "74.0%",
+    },
+    height: "6'10\"",
+    weight: "248 lbs",
+    age: 27,
+    college: "Wisconsin",
+    draft: "Undrafted",
+    experience: "Rookie",
+    achievements: ["Big Ten Sixth Man of the Year [2021]"],
+    logo: pacersLogo,
+  },
+  {
     id: "kam-jones",
     name: "Kam Jones",
     number: 7,
@@ -387,30 +409,6 @@ const players = [
     draft: "2017: 1st Rd. 28th",
     experience: "7 years",
     achievements: ["NCAA Champion [2017]"],
-    logo: pacersLogo,
-  },
-  {
-    id: "jeremiah-robinson-earl",
-    name: "Jeremiah Robinson-Earl",
-    number: 25,
-    image: jreImg,
-    position: "Forward",
-    stats: {
-      points: 4.8,
-      rebounds: 5.4,
-      assists: 0.8,
-      steals: 0.4,
-      fg: "45.0%",
-      threeP: "32.0%",
-      ft: "75.0%",
-    },
-    height: "6'9\"",
-    weight: "240 lbs",
-    age: 25,
-    college: "Villanova",
-    draft: "2021: 2nd Rd. 32nd",
-    experience: "4 years",
-    achievements: ["NCAA Champion [2018]"],
     logo: pacersLogo,
   },
   {

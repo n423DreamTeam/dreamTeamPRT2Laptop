@@ -31,6 +31,9 @@ document.addEventListener("DOMContentLoaded", () => {
   let playersData = [];
   let lineup = [];
   const MAX_LINEUP_SIZE = 5;
+  const VISIBLE_PLAYER_COUNT = 8;
+  const POINTS_TOLERANCE = 2.5;
+  const ASSISTS_TOLERANCE = 1.0;
 
   let goalPoints = 150;
   let goalAssists = 50;
@@ -644,23 +647,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const challenges = [
       {
-        points: 60,
-        assists: 15,
+        points: 62,
+        assists: 14,
         desc: "Build a balanced team with moderate scoring",
       },
       {
-        points: 70,
-        assists: 15,
+        points: 67,
+        assists: 16,
         desc: "Create a high-assist lineup for ball movement",
       },
-      { points: 80, assists: 30, desc: "Focus on playmaking over scoring" },
-      { points: 20, assists: 10, desc: "Go for a scoring-focused roster" },
-      { points: 20, assists: 10, desc: "Achieve perfect balance" },
-      { points: 20, assists: 10, desc: "Team up the assist leaders" },
-      { points: 20, assists: 10, desc: "Go big with scoring power" },
-      { points: 20, assists: 10, desc: "Ultimate passing challenge" },
-      { points: 20, assists: 10, desc: "Create a defensive-minded lineup" },
-      { points: 20, assists: 10, desc: "Build a well-rounded squad" },
+      { points: 71, assists: 18, desc: "Focus on playmaking over scoring" },
+      { points: 74, assists: 20, desc: "Go for a scoring-focused roster" },
+      { points: 58, assists: 12, desc: "Achieve perfect balance" },
+      { points: 64, assists: 15, desc: "Team up the assist leaders" },
+      { points: 69, assists: 17, desc: "Go big with scoring power" },
+      { points: 73, assists: 19, desc: "Ultimate passing challenge" },
+      { points: 76, assists: 21, desc: "Create a defensive-minded lineup" },
+      { points: 60, assists: 13, desc: "Build a well-rounded squad" },
     ];
 
     const challenge = challenges[seed];
@@ -675,7 +678,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function updateChallengeDisplay() {
     const objectiveText = document.querySelector(".puzzle-objective p");
     if (objectiveText) {
-      objectiveText.innerHTML = `Achieve a total team score of <span class="highlight">${goalPoints} points</span> and <span class="highlight">${goalAssists} assists</span> using any 5 players.<br><em style="font-size: 0.9em; color: rgba(255,255,255,0.7);">${dailyChallenge.desc}</em>`;
+      objectiveText.innerHTML = `Build an exact 5-player lineup with <span class="highlight">${goalPoints} points</span> and <span class="highlight">${goalAssists} assists</span> (within +/-${POINTS_TOLERANCE.toFixed(1)} points and +/-${ASSISTS_TOLERANCE.toFixed(1)} assists).<br><em style="font-size: 0.9em; color: rgba(255,255,255,0.7);">${dailyChallenge.desc}</em>`;
     }
 
     const pointsLabel = document
@@ -700,20 +703,20 @@ document.addEventListener("DOMContentLoaded", () => {
     { name: "Pascal Siakam", pts: 21.3, ast: 4.8, requiredPoints: 400 },
     { name: "Andrew Nembhard", pts: 9.2, ast: 4.1, requiredPoints: 0 },
     { name: "Aaron Nesmith", pts: 12.2, ast: 1.5, requiredPoints: 200 },
-    { name: "Benedict Mathurin", pts: 14.5, ast: 2.0, requiredPoints: 300 },
     { name: "T.J. McConnell", pts: 9.8, ast: 4.3, requiredPoints: 0 },
     { name: "Jay Huff", pts: 7.8, ast: 1.0, requiredPoints: 0 },
     { name: "Obi Toppin", pts: 10.3, ast: 1.5, requiredPoints: 50 },
     { name: "Ben Sheppard", pts: 5.1, ast: 1.2, requiredPoints: 0 },
     { name: "Jarace Walker", pts: 3.8, ast: 0.9, requiredPoints: 0 },
-    { name: "Isaiah Jackson", pts: 8.2, ast: 1.0, requiredPoints: 0 },
     { name: "Johnny Furphy", pts: 2.5, ast: 0.3, requiredPoints: 0 },
     { name: "Taelon Peter", pts: 1.8, ast: 1.1, requiredPoints: 0 },
     { name: "Kam Jones", pts: 0.0, ast: 0.0, requiredPoints: 0 },
     { name: "Tony Bradley", pts: 4.9, ast: 0.7, requiredPoints: 0 },
-    { name: "Jeremiah Robinson-Earl", pts: 4.8, ast: 0.8, requiredPoints: 0 },
     { name: "Quenton Jackson", pts: 11.8, ast: 3.6, requiredPoints: 100 },
     { name: "Ethan Thompson", pts: 2.0, ast: 1.0, requiredPoints: 0 },
+    { name: "Micah Potter", pts: 3.4, ast: 0.5, requiredPoints: 0 },
+    { name: "Kobe Brown", pts: 5.5, ast: 1.2, requiredPoints: 0 },
+    { name: "Ivica Zubac", pts: 16.8, ast: 2.6, requiredPoints: 300 },
   ];
 
   function pickRandomPlayers(pool, count = 5) {
@@ -801,7 +804,7 @@ document.addEventListener("DOMContentLoaded", () => {
       );
     }
 
-    playersData = pickRandomPlayers(allPlayersPool, 5);
+    playersData = pickRandomPlayers(allPlayersPool, VISIBLE_PLAYER_COUNT);
     console.log(
       `✅ Loaded ${allPlayersPool.length} total players (${
         currentRoster.length
@@ -813,7 +816,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function displayPlayers(players) {
-    const visible = players.slice(0, 5);
+    const visible = players.slice(0, VISIBLE_PLAYER_COUNT);
 
     if (!visible.length) {
       playersContainer.innerHTML = `<p style="color:yellow">No Pacers found.</p>`;
@@ -878,7 +881,13 @@ document.addEventListener("DOMContentLoaded", () => {
     pointsVal.textContent = totalPoints.toFixed(1);
     assistsVal.textContent = totalAssists.toFixed(1);
 
-    if (!challengeCompleted && pointsPct === 100 && assistsPct === 100) {
+    const pointsDiff = Math.abs(totalPoints - goalPoints);
+    const assistsDiff = Math.abs(totalAssists - goalAssists);
+    const hasExactLineupSize = lineup.length === MAX_LINEUP_SIZE;
+    const isWithinTargetWindow =
+      pointsDiff <= POINTS_TOLERANCE && assistsDiff <= ASSISTS_TOLERANCE;
+
+    if (!challengeCompleted && hasExactLineupSize && isWithinTargetWindow) {
       challengeCompleted = true;
       showChallengeComplete(totalPoints, totalAssists);
     }
